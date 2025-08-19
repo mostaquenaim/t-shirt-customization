@@ -292,6 +292,125 @@ const CustomizeYourTee = () => {
     setSelectedElement(newElement.id);
   };
 
+  const getPointerPosition = (e) => {
+    // Handle both mouse and touch events
+    const clientX = e.clientX || (e.touches && e.touches[0]?.clientX) || 0;
+    const clientY = e.clientY || (e.touches && e.touches[0]?.clientY) || 0;
+    return { clientX, clientY };
+  };
+
+  const handlePointerDown = (e, element) => {
+    // Prevent default behavior and event bubbling
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const { clientX, clientY } = getPointerPosition(e);
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    setDraggedElement(element.id);
+    setSelectedElement(element.id);
+    setDragOffset({
+      x: x - element.x,
+      y: y - element.y,
+    });
+
+    // Add global event listeners for move and end events
+    if (e.type === 'mousedown') {
+      document.addEventListener('mousemove', handlePointerMove);
+      document.addEventListener('mouseup', handlePointerUp);
+    } else if (e.type === 'touchstart') {
+      document.addEventListener('touchmove', handlePointerMove, { passive: false });
+      document.addEventListener('touchend', handlePointerUp);
+      document.addEventListener('touchcancel', handlePointerUp);
+    }
+  };
+
+  const handlePointerMove = (e) => {
+    if (!draggedElement) return;
+    
+    // Prevent scrolling on touch devices
+    if (e.type === 'touchmove') {
+      e.preventDefault();
+    }
+
+    const { clientX, clientY } = getPointerPosition(e);
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    // Calculate new position
+    const newX = x - dragOffset.x;
+    const newY = y - dragOffset.y;
+
+    // Optional: Add boundary constraints
+    const canvasWidth = rect.width;
+    const canvasHeight = rect.height;
+    
+    setElements((prevState) => ({
+      ...prevState,
+      [viewSide]: prevState[viewSide].map((el) => {
+        if (el.id === draggedElement) {
+          // Constrain within canvas boundaries
+          const constrainedX = Math.max(0, Math.min(newX, canvasWidth - el.width));
+          const constrainedY = Math.max(0, Math.min(newY, canvasHeight - el.height));
+          
+          return { ...el, x: constrainedX, y: constrainedY };
+        }
+        return el;
+      }),
+    }));
+  };
+
+  const handlePointerUp = (e) => {
+    if (!draggedElement) return;
+
+    setDraggedElement(null);
+
+    // Remove all global event listeners
+    document.removeEventListener('mousemove', handlePointerMove);
+    document.removeEventListener('mouseup', handlePointerUp);
+    document.removeEventListener('touchmove', handlePointerMove);
+    document.removeEventListener('touchend', handlePointerUp);
+    document.removeEventListener('touchcancel', handlePointerUp);
+  };
+
+  // Canvas event handlers (for clicking empty space)
+  const handleCanvasPointerDown = (e) => {
+    const { clientX, clientY } = getPointerPosition(e);
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    // Check if click/touch is on an element
+    const clickedElement = elements[viewSide].find((element) => {
+      return (
+        x >= element.x &&
+        x <= element.x + element.width &&
+        y >= element.y &&
+        y <= element.y + element.height
+      );
+    });
+
+    if (!clickedElement) {
+      setSelectedElement(null);
+    }
+  };
+
+  // Cleanup effect for removing event listeners
+  useEffect(() => {
+    return () => {
+      // Cleanup any remaining event listeners
+      document.removeEventListener('mousemove', handlePointerMove);
+      document.removeEventListener('mouseup', handlePointerUp);
+      document.removeEventListener('touchmove', handlePointerMove);
+      document.removeEventListener('touchend', handlePointerUp);
+      document.removeEventListener('touchcancel', handlePointerUp);
+    };
+  }, []);
+
+
   // Add image element
   const addImage = (event) => {
     const file = event.target.files[0];
@@ -656,6 +775,7 @@ const CustomizeYourTee = () => {
             handleTouchMove={handleTouchMove}
             handleTouchEnd={handleTouchEnd}
             handleTouchStart={handleTouchStart}
+            handleCanvasPointerDown={handleCanvasPointerDown}
           />
 
           <RightPanel

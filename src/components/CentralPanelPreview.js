@@ -1,5 +1,5 @@
-import { FlipHorizontal, Shirt } from 'lucide-react';
-import React, { useState } from 'react';
+import { FlipHorizontal, Shirt } from "lucide-react";
+import React, { useState } from "react";
 
 const CentralPanelPreview = ({
   panelStyle,
@@ -16,6 +16,7 @@ const CentralPanelPreview = ({
   handleTouchMove,
   handleTouchEnd,
   handleTouchStart,
+  handleCanvasPointerDown,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
 
@@ -38,15 +39,15 @@ const CentralPanelPreview = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() =>
-                setViewSide(viewSide === 'front' ? 'back' : 'front')
+                setViewSide(viewSide === "front" ? "back" : "front")
               }
               className="flex items-center gap-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors"
               aria-label={`Switch to ${
-                viewSide === 'front' ? 'back' : 'front'
+                viewSide === "front" ? "back" : "front"
               } view`}
             >
               <FlipHorizontal size={16} />
-              {viewSide === 'front' ? 'Back View' : 'Front View'}
+              {viewSide === "front" ? "Back View" : "Front View"}
             </button>
           </div>
         </div>
@@ -56,32 +57,28 @@ const CentralPanelPreview = ({
           <div
             ref={canvasRef}
             className={`relative border-2 border-gray-300 rounded-lg overflow-hidden ${
-              isDragging ? 'cursor-grabbing' : 'cursor-crosshair'
+              isDragging ? "cursor-grabbing" : "cursor-crosshair"
             }`}
             style={{
-              width: '100%',
-              maxWidth: '400px',
-              height: 'calc(100vw * 1.25)', // 5:4 aspect ratio
-              maxHeight: '500px',
+              width: "100%",
+              maxWidth: "400px",
+              height: "calc(100vw * 1.25)", // 5:4 aspect ratio
+              maxHeight: "500px",
               backgroundImage: `url(${selectedColor.previewImages[viewSide]})`,
-              backgroundSize: 'cover',
-              touchAction: 'none', // Prevent scrolling/zooming
+              backgroundSize: "cover",
+              touchAction: "none", // Prevent scrolling/zooming
             }}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onTouchCancel={handleTouchEnd}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUpEnhanced}
-            onMouseLeave={handleMouseUpEnhanced}
+            onMouseDown={handleCanvasPointerDown}
+            onTouchStart={handleCanvasPointerDown}
           >
             {/* T-shirt outline - now more subtle since we have the actual image */}
             <div
               className="absolute inset-4 border border-dashed rounded-lg opacity-30 pointer-events-none"
               style={{
                 borderColor:
-                  selectedColor.color === '#FFFFFF'
-                    ? '#9CA3AF'
-                    : 'rgba(255,255,255,0.6)',
+                  selectedColor.color === "#FFFFFF"
+                    ? "#9CA3AF"
+                    : "rgba(255,255,255,0.6)",
               }}
             />
 
@@ -90,28 +87,28 @@ const CentralPanelPreview = ({
               <div
                 key={element.id}
                 className={`absolute cursor-move touch-none ${
-                  selectedElement === element.id ? 'ring-2 ring-blue-400' : ''
+                  selectedElement === element.id ? "ring-2 ring-blue-400" : ""
                 }`}
                 style={{
                   left: element.x,
                   top: element.y,
                   width: element.width,
                   height: element.height,
-                  padding: '8px', // Increased touch area
+                  padding: "8px", // Increased touch area
                   transform: `rotate(${element.style.rotation || 0}deg)`,
                 }}
-                onMouseDown={(e) => handleMouseDownEnhanced(e, element)}
-                onTouchStart={(e) => handleTouchStart(e, element)}
+                onMouseDown={(e) => handlePointerDown(e, element)}
+                onTouchStart={(e) => handlePointerDown(e, element)}
               >
-                {element.type === 'text' ? (
+                {element.type === "text" ? (
                   <div
                     style={{
                       fontSize: element.style.fontSize,
                       color: element.style.color,
                       fontWeight: element.style.fontWeight,
                       fontFamily: element.style.fontFamily,
-                      whiteSpace: 'nowrap',
-                      userSelect: 'none',
+                      whiteSpace: "nowrap",
+                      userSelect: "none",
                     }}
                   >
                     {element.content}
@@ -133,11 +130,11 @@ const CentralPanelPreview = ({
         <div className="mt-6 text-center">
           <div className="inline-flex bg-gray-100 rounded-lg p-1">
             <button
-              onClick={() => setViewSide('front')}
+              onClick={() => setViewSide("front")}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                viewSide === 'front'
-                  ? 'bg-white shadow-sm text-gray-900'
-                  : 'text-gray-600 hover:text-gray-800'
+                viewSide === "front"
+                  ? "bg-white shadow-sm text-gray-900"
+                  : "text-gray-600 hover:text-gray-800"
               }`}
             >
               <div className="flex items-center gap-2">
@@ -146,11 +143,11 @@ const CentralPanelPreview = ({
               </div>
             </button>
             <button
-              onClick={() => setViewSide('back')}
+              onClick={() => setViewSide("back")}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                viewSide === 'back'
-                  ? 'bg-white shadow-sm text-gray-900'
-                  : 'text-gray-600 hover:text-gray-800'
+                viewSide === "back"
+                  ? "bg-white shadow-sm text-gray-900"
+                  : "text-gray-600 hover:text-gray-800"
               }`}
             >
               <div className="flex items-center gap-2">
