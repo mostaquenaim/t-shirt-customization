@@ -73,12 +73,19 @@ const TeeCustomization = () => {
     setSelectedElement(null);
   };
 
-  const handleElementMouseDown = (e, type, id) => {
+  const handleElementStart = (e, type, id) => {
+    // Prevent default for both touch and mouse
     e.preventDefault();
     setSelectedElement({ type, id });
     
-    const startX = e.clientX;
-    const startY = e.clientY;
+    // Get initial position based on input type
+    const clientX = e.clientX || e.touches?.[0]?.clientX;
+    const clientY = e.clientY || e.touches?.[0]?.clientY;
+    
+    if (clientX === undefined || clientY === undefined) return;
+    
+    const startX = clientX;
+    const startY = clientY;
     const element = type === 'text' 
       ? textElements.find(el => el.id === id)
       : imageElements.find(el => el.id === id);
@@ -86,9 +93,15 @@ const TeeCustomization = () => {
     const startElementX = element.x;
     const startElementY = element.y;
 
-    const handleMouseMove = (e) => {
-      const deltaX = e.clientX - startX;
-      const deltaY = e.clientY - startY;
+    const handleMove = (moveEvent) => {
+      // Get current position based on input type
+      const moveClientX = moveEvent.clientX || moveEvent.touches?.[0]?.clientX;
+      const moveClientY = moveEvent.clientY || moveEvent.touches?.[0]?.clientY;
+      
+      if (moveClientX === undefined || moveClientY === undefined) return;
+      
+      const deltaX = moveClientX - startX;
+      const deltaY = moveClientY - startY;
       const newX = startElementX + deltaX;
       const newY = startElementY + deltaY;
 
@@ -99,13 +112,19 @@ const TeeCustomization = () => {
       }
     };
 
-    const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+    const handleEnd = () => {
+      // Remove both mouse and touch listeners
+      document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('touchmove', handleMove);
+      document.removeEventListener('mouseup', handleEnd);
+      document.removeEventListener('touchend', handleEnd);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    // Add both mouse and touch listeners
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('touchmove', handleMove, { passive: false });
+    document.addEventListener('mouseup', handleEnd);
+    document.addEventListener('touchend', handleEnd);
   };
 
   const getSelectedElement = () => {
@@ -120,27 +139,28 @@ const TeeCustomization = () => {
 
   const selectedEl = getSelectedElement();
 
+
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold text-gray-800 text-center mb-8">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 text-center mb-6 sm:mb-8">
           Customize Your T-Shirt
         </h1>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Design Canvas */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="text-2xl font-semibold mb-4">Design Canvas</h2>
+          <div className="xl:col-span-2">
+            <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+              <h2 className="text-xl sm:text-2xl font-semibold mb-4">Design Canvas</h2>
               
               {/* T-Shirt Color Selector */}
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2">T-Shirt Color:</label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {['#ffffff', '#000000', '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'].map(color => (
                     <button
                       key={color}
-                      className={`w-8 h-8 rounded border-2 ${tshirtColor === color ? 'border-gray-800' : 'border-gray-300'}`}
+                      className={`w-6 h-6 sm:w-8 sm:h-8 rounded border-2 ${tshirtColor === color ? 'border-gray-800' : 'border-gray-300'} flex-shrink-0`}
                       style={{ backgroundColor: color }}
                       onClick={() => setTshirtColor(color)}
                     />
@@ -149,22 +169,22 @@ const TeeCustomization = () => {
                     type="color"
                     value={tshirtColor}
                     onChange={(e) => setTshirtColor(e.target.value)}
-                    className="w-8 h-8 rounded border-2 border-gray-300"
+                    className="w-6 h-6 sm:w-8 sm:h-8 rounded border-2 border-gray-300 flex-shrink-0"
                   />
                 </div>
               </div>
 
               {/* T-Shirt Preview */}
-              <div className="relative mx-auto" style={{ width: '400px', height: '500px' }}>
-                {/* T-Shirt Base */}
-                <svg
-                  ref={tshirtRef}
-                  width="400"
-                  height="500"
-                  viewBox="0 0 400 500"
-                  className="border border-gray-300 rounded-lg"
-                  style={{ backgroundColor: '#f9f9f9' }}
-                >
+              <div className="flex justify-center">
+                <div className="relative w-full max-w-sm sm:max-w-md lg:max-w-lg" style={{ aspectRatio: '4/5' }}>
+                  {/* T-Shirt Base */}
+                  <svg
+                    ref={tshirtRef}
+                    className="w-full h-full border border-gray-300 rounded-lg"
+                    viewBox="0 0 400 500"
+                    style={{ backgroundColor: '#f9f9f9' }}
+                    preserveAspectRatio="xMidYMid meet"
+                  >
                   {/* T-Shirt Shape */}
                   <path
                     d="M100 80 L100 60 C100 50 110 40 120 40 L140 40 C150 30 160 20 170 20 L230 20 C240 20 250 30 260 40 L280 40 C290 40 300 50 300 60 L300 80 L320 100 L320 140 L300 140 L300 480 L100 480 L100 140 L80 140 L80 100 Z"
@@ -185,61 +205,80 @@ const TeeCustomization = () => {
                     strokeDasharray="5,5"
                     opacity="0.5"
                   />
-                </svg>
+                  </svg>
 
-                {/* Overlay for Text and Images */}
-                <div className="absolute inset-0">
-                  {/* Text Elements */}
-                  {textElements.map((element) => (
-                    <div
-                      key={element.id}
-                      className={`absolute cursor-move select-none ${
-                        selectedElement?.type === 'text' && selectedElement?.id === element.id
-                          ? 'ring-2 ring-blue-500'
-                          : ''
-                      }`}
-                      style={{
-                        left: element.x,
-                        top: element.y,
-                        fontSize: element.fontSize,
-                        color: element.color,
-                        fontFamily: element.fontFamily,
-                        transform: `rotate(${element.rotation}deg)`,
-                        transformOrigin: 'center'
-                      }}
-                      onMouseDown={(e) => handleElementMouseDown(e, 'text', element.id)}
-                    >
-                      {element.text}
-                    </div>
-                  ))}
+                  {/* Overlay for Text and Images */}
+                  <div className="absolute inset-0">
+                    {/* Text Elements */}
+                    {textElements.map((element) => (
+                      <div
+                        key={element.id}
+                        className={`absolute cursor-move select-none transition-all ${
+                          selectedElement?.type === 'text' && selectedElement?.id === element.id
+                            ? 'ring-2 ring-blue-500'
+                            : ''
+                        }`}
+                        style={{
+                          left: `${(element.x / 400) * 100}%`,
+                          top: `${(element.y / 500) * 100}%`,
+                          fontSize: `${(element.fontSize / 400) * 100}%`,
+                          color: element.color,
+                          fontFamily: element.fontFamily,
+                          transform: `translate(-50%, -50%) rotate(${element.rotation}deg)`,
+                          transformOrigin: 'center'
+                        }}
+                        onMouseDown={(e) => handleElementStart(e, 'text', element.id)}
+                        onTouchStart={(e) => {
+                          e.preventDefault();
+                          const touch = e.touches[0];
+                          const mouseEvent = new MouseEvent('mousedown', {
+                            clientX: touch.clientX,
+                            clientY: touch.clientY
+                          });
+                          handleElementStart(mouseEvent, 'text', element.id);
+                        }}
+                      >
+                        {element.text}
+                      </div>
+                    ))}
 
-                  {/* Image Elements */}
-                  {imageElements.map((element) => (
-                    <div
-                      key={element.id}
-                      className={`absolute cursor-move ${
-                        selectedElement?.type === 'image' && selectedElement?.id === element.id
-                          ? 'ring-2 ring-blue-500'
-                          : ''
-                      }`}
-                      style={{
-                        left: element.x,
-                        top: element.y,
-                        width: element.width,
-                        height: element.height,
-                        transform: `rotate(${element.rotation}deg)`,
-                        transformOrigin: 'center'
-                      }}
-                      onMouseDown={(e) => handleElementMouseDown(e, 'image', element.id)}
-                    >
-                      <img
-                        src={element.src}
-                        alt="Custom design"
-                        className="w-full h-full object-contain pointer-events-none"
-                        draggable={false}
-                      />
-                    </div>
-                  ))}
+                    {/* Image Elements */}
+                    {imageElements.map((element) => (
+                      <div
+                        key={element.id}
+                        className={`absolute cursor-move transition-all ${
+                          selectedElement?.type === 'image' && selectedElement?.id === element.id
+                            ? 'ring-2 ring-blue-500'
+                            : ''
+                        }`}
+                        style={{
+                          left: `${(element.x / 400) * 100}%`,
+                          top: `${(element.y / 500) * 100}%`,
+                          width: `${(element.width / 400) * 100}%`,
+                          height: `${(element.height / 500) * 100}%`,
+                          transform: `translate(-50%, -50%) rotate(${element.rotation}deg)`,
+                          transformOrigin: 'center'
+                        }}
+                        onMouseDown={(e) => handleElementStart(e, 'image', element.id)}
+                        onTouchStart={(e) => {
+                          e.preventDefault();
+                          const touch = e.touches[0];
+                          const mouseEvent = new MouseEvent('mousedown', {
+                            clientX: touch.clientX,
+                            clientY: touch.clientY
+                          });
+                          handleElementStart(mouseEvent, 'image', element.id);
+                        }}
+                      >
+                        <img
+                          src={element.src}
+                          alt="Custom design"
+                          className="w-full h-full object-contain pointer-events-none"
+                          draggable={false}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
