@@ -139,28 +139,27 @@ const TeeCustomization = () => {
 
   const selectedEl = getSelectedElement();
 
-
   return (
-    <div className="min-h-screen bg-gray-50 p-3 sm:p-6">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 text-center mb-6 sm:mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 text-center mb-6 md:mb-8">
           Customize Your T-Shirt
         </h1>
         
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
           {/* Design Canvas */}
-          <div className="xl:col-span-2">
-            <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
-              <h2 className="text-xl sm:text-2xl font-semibold mb-4">Design Canvas</h2>
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
+              <h2 className="text-xl md:text-2xl font-semibold mb-3 md:mb-4">Design Canvas</h2>
               
               {/* T-Shirt Color Selector */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">T-Shirt Color:</label>
-                <div className="flex flex-wrap gap-2">
+              <div className="mb-3 md:mb-4">
+                <label className="block text-sm font-medium mb-1 md:mb-2">T-Shirt Color:</label>
+                <div className="flex gap-2 flex-wrap">
                   {['#ffffff', '#000000', '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'].map(color => (
                     <button
                       key={color}
-                      className={`w-6 h-6 sm:w-8 sm:h-8 rounded border-2 ${tshirtColor === color ? 'border-gray-800' : 'border-gray-300'} flex-shrink-0`}
+                      className={`w-6 h-6 md:w-8 md:h-8 rounded border-2 ${tshirtColor === color ? 'border-gray-800' : 'border-gray-300'}`}
                       style={{ backgroundColor: color }}
                       onClick={() => setTshirtColor(color)}
                     />
@@ -169,22 +168,22 @@ const TeeCustomization = () => {
                     type="color"
                     value={tshirtColor}
                     onChange={(e) => setTshirtColor(e.target.value)}
-                    className="w-6 h-6 sm:w-8 sm:h-8 rounded border-2 border-gray-300 flex-shrink-0"
+                    className="w-6 h-6 md:w-8 md:h-8 rounded border-2 border-gray-300"
                   />
                 </div>
               </div>
 
               {/* T-Shirt Preview */}
-              <div className="flex justify-center">
-                <div className="relative w-full max-w-sm sm:max-w-md lg:max-w-lg" style={{ aspectRatio: '4/5' }}>
-                  {/* T-Shirt Base */}
-                  <svg
-                    ref={tshirtRef}
-                    className="w-full h-full border border-gray-300 rounded-lg"
-                    viewBox="0 0 400 500"
-                    style={{ backgroundColor: '#f9f9f9' }}
-                    preserveAspectRatio="xMidYMid meet"
-                  >
+              <div className="relative mx-auto" style={{ width: '100%', maxWidth: '400px', height: '500px' }}>
+                {/* T-Shirt Base */}
+                <svg
+                  ref={tshirtRef}
+                  width="100%"
+                  height="500"
+                  viewBox="0 0 400 500"
+                  className="border border-gray-300 rounded-lg"
+                  style={{ backgroundColor: '#f9f9f9' }}
+                >
                   {/* T-Shirt Shape */}
                   <path
                     d="M100 80 L100 60 C100 50 110 40 120 40 L140 40 C150 30 160 20 170 20 L230 20 C240 20 250 30 260 40 L280 40 C290 40 300 50 300 60 L300 80 L320 100 L320 140 L300 140 L300 480 L100 480 L100 140 L80 140 L80 100 Z"
@@ -205,93 +204,76 @@ const TeeCustomization = () => {
                     strokeDasharray="5,5"
                     opacity="0.5"
                   />
-                  </svg>
+                </svg>
 
-                  {/* Overlay for Text and Images */}
-                  <div className="absolute inset-0">
-                    {/* Text Elements */}
-                    {textElements.map((element) => (
-                      <div
-                        key={element.id}
-                        className={`absolute cursor-move select-none transition-all ${
-                          selectedElement?.type === 'text' && selectedElement?.id === element.id
-                            ? 'ring-2 ring-blue-500'
-                            : ''
-                        }`}
-                        style={{
-                          left: `${(element.x / 400) * 100}%`,
-                          top: `${(element.y / 500) * 100}%`,
-                          fontSize: `${(element.fontSize / 400) * 100}%`,
-                          color: element.color,
-                          fontFamily: element.fontFamily,
-                          transform: `translate(-50%, -50%) rotate(${element.rotation}deg)`,
-                          transformOrigin: 'center'
-                        }}
-                        onMouseDown={(e) => handleElementStart(e, 'text', element.id)}
-                        onTouchStart={(e) => {
-                          e.preventDefault();
-                          const touch = e.touches[0];
-                          const mouseEvent = new MouseEvent('mousedown', {
-                            clientX: touch.clientX,
-                            clientY: touch.clientY
-                          });
-                          handleElementStart(mouseEvent, 'text', element.id);
-                        }}
-                      >
-                        {element.text}
-                      </div>
-                    ))}
+                {/* Overlay for Text and Images */}
+                <div className="absolute inset-0 touch-none">
+                  {/* Text Elements */}
+                  {textElements.map((element) => (
+                    <div
+                      key={element.id}
+                      className={`absolute cursor-move select-none touch-none ${
+                        selectedElement?.type === 'text' && selectedElement?.id === element.id
+                          ? 'ring-2 ring-blue-500'
+                          : ''
+                      }`}
+                      style={{
+                        left: element.x,
+                        top: element.y,
+                        fontSize: element.fontSize,
+                        color: element.color,
+                        fontFamily: element.fontFamily,
+                        transform: `rotate(${element.rotation}deg)`,
+                        transformOrigin: 'center'
+                      }}
+                      onMouseDown={(e) => handleElementStart(e, 'text', element.id)}
+                      onTouchStart={(e) => handleElementStart(e, 'text', element.id)}
+                    >
+                      {element.text}
+                    </div>
+                  ))}
 
-                    {/* Image Elements */}
-                    {imageElements.map((element) => (
-                      <div
-                        key={element.id}
-                        className={`absolute cursor-move transition-all ${
-                          selectedElement?.type === 'image' && selectedElement?.id === element.id
-                            ? 'ring-2 ring-blue-500'
-                            : ''
-                        }`}
-                        style={{
-                          left: `${(element.x / 400) * 100}%`,
-                          top: `${(element.y / 500) * 100}%`,
-                          width: `${(element.width / 400) * 100}%`,
-                          height: `${(element.height / 500) * 100}%`,
-                          transform: `translate(-50%, -50%) rotate(${element.rotation}deg)`,
-                          transformOrigin: 'center'
-                        }}
-                        onMouseDown={(e) => handleElementStart(e, 'image', element.id)}
-                        onTouchStart={(e) => {
-                          e.preventDefault();
-                          const touch = e.touches[0];
-                          const mouseEvent = new MouseEvent('mousedown', {
-                            clientX: touch.clientX,
-                            clientY: touch.clientY
-                          });
-                          handleElementStart(mouseEvent, 'image', element.id);
-                        }}
-                      >
-                        <img
-                          src={element.src}
-                          alt="Custom design"
-                          className="w-full h-full object-contain pointer-events-none"
-                          draggable={false}
-                        />
-                      </div>
-                    ))}
-                  </div>
+                  {/* Image Elements */}
+                  {imageElements.map((element) => (
+                    <div
+                      key={element.id}
+                      className={`absolute cursor-move touch-none ${
+                        selectedElement?.type === 'image' && selectedElement?.id === element.id
+                          ? 'ring-2 ring-blue-500'
+                          : ''
+                      }`}
+                      style={{
+                        left: element.x,
+                        top: element.y,
+                        width: element.width,
+                        height: element.height,
+                        transform: `rotate(${element.rotation}deg)`,
+                        transformOrigin: 'center'
+                      }}
+                      onMouseDown={(e) => handleElementStart(e, 'image', element.id)}
+                      onTouchStart={(e) => handleElementStart(e, 'image', element.id)}
+                    >
+                      <img
+                        src={element.src}
+                        alt="Custom design"
+                        className="w-full h-full object-contain pointer-events-none"
+                        draggable={false}
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
 
           {/* Controls Panel */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {/* Add Elements */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h3 className="text-xl font-semibold mb-4">Add Elements</h3>
+            <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
+              <h3 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">Add Elements</h3>
               
               {/* Add Text */}
-              <div className="mb-4">
+              <div className="mb-3 md:mb-4">
                 {!showTextInput ? (
                   <button
                     onClick={() => setShowTextInput(true)}
@@ -353,13 +335,13 @@ const TeeCustomization = () => {
 
             {/* Element Properties */}
             {selectedEl && (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h3 className="text-xl font-semibold mb-4">
+              <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
+                <h3 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">
                   Edit {selectedElement.type === 'text' ? 'Text' : 'Image'}
                 </h3>
 
                 {selectedElement.type === 'text' && (
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     <div>
                       <label className="block text-sm font-medium mb-1">Text:</label>
                       <input
@@ -389,7 +371,7 @@ const TeeCustomization = () => {
                         type="color"
                         value={selectedEl.color}
                         onChange={(e) => updateTextElement(selectedEl.id, { color: e.target.value })}
-                        className="w-full h-10 rounded-lg border border-gray-300"
+                        className="w-full h-8 md:h-10 rounded-lg border border-gray-300"
                       />
                     </div>
 
@@ -413,7 +395,7 @@ const TeeCustomization = () => {
                 )}
 
                 {selectedElement.type === 'image' && (
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     <div>
                       <label className="block text-sm font-medium mb-1">Width:</label>
                       <input
@@ -443,7 +425,7 @@ const TeeCustomization = () => {
                 )}
 
                 {/* Common Properties */}
-                <div className="space-y-4 mt-4">
+                <div className="space-y-3 md:space-y-4 mt-3 md:mt-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">Rotation:</label>
                     <input
@@ -491,9 +473,9 @@ const TeeCustomization = () => {
             )}
 
             {/* Design Tips */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h3 className="text-xl font-semibold mb-4">Design Tips</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
+            <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
+              <h3 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">Design Tips</h3>
+              <ul className="space-y-1 md:space-y-2 text-sm text-gray-600">
                 <li>• Click and drag elements to move them around</li>
                 <li>• Select an element to edit its properties</li>
                 <li>• Keep text within the dotted design area</li>
@@ -504,8 +486,8 @@ const TeeCustomization = () => {
 
             {/* Elements List */}
             {(textElements.length > 0 || imageElements.length > 0) && (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h3 className="text-xl font-semibold mb-4">Design Elements</h3>
+              <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
+                <h3 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">Design Elements</h3>
                 <div className="space-y-2">
                   {textElements.map((element) => (
                     <div
@@ -552,12 +534,12 @@ const TeeCustomization = () => {
             )}
 
             {/* Action Buttons */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="space-y-3">
-                <button className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold">
+            <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
+              <div className="space-y-2 md:space-y-3">
+                <button className="w-full bg-green-600 text-white px-4 py-2 md:px-6 md:py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold">
                   Add to Cart - $24.99
                 </button>
-                <button className="w-full bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors">
+                <button className="w-full bg-gray-600 text-white px-4 py-2 md:px-6 md:py-3 rounded-lg hover:bg-gray-700 transition-colors">
                   Save Design
                 </button>
               </div>
@@ -566,9 +548,9 @@ const TeeCustomization = () => {
         </div>
 
         {/* Instructions */}
-        <div className="mt-8 bg-blue-50 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-blue-800 mb-2">How to Use:</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-blue-700">
+        <div className="mt-6 md:mt-8 bg-blue-50 rounded-lg p-4 md:p-6">
+          <h3 className="text-base md:text-lg font-semibold text-blue-800 mb-2">How to Use:</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 text-sm text-blue-700">
             <div>
               <strong>1. Add Elements:</strong> Click "Add Text" to add custom text or "Upload Image" to add your own graphics.
             </div>
