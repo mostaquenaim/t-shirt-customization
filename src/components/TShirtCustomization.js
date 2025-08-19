@@ -1,13 +1,13 @@
-'use client'
-import React, { useState, useRef, useContext, useEffect } from 'react';
-import { Printer, Download, X } from 'lucide-react';
-import useAxiosPublic from '@/Hooks/useAxiosPublic';
-import toast from 'react-hot-toast';
-import TopElements from './TopElements';
-import LeftPanelTools from './LeftPanelTools';
-import CentralPanelPreview from './CentralPanelPreview';
-import RightPanel from './RightPanel';
-import { getGuestCustomerInfo } from '@/utils/guestCustomer';
+"use client";
+import React, { useState, useRef, useContext, useEffect } from "react";
+import { Printer, Download, X } from "lucide-react";
+import useAxiosPublic from "@/Hooks/useAxiosPublic";
+import toast from "react-hot-toast";
+import TopElements from "./TopElements";
+import LeftPanelTools from "./LeftPanelTools";
+import CentralPanelPreview from "./CentralPanelPreview";
+import RightPanel from "./RightPanel";
+import { getGuestCustomerInfo } from "@/utils/guestCustomer";
 
 const CustomizeYourTee = () => {
   const canvasRef = useRef(null);
@@ -15,72 +15,72 @@ const CustomizeYourTee = () => {
 
   const tshirtColors = [
     {
-      color: '#000000',
+      color: "#000000",
       previewImages: {
-        front: '/preview-images/Black.png',
-        back: '/preview-images/black-back.png',
+        front: "/preview-images/Black.png",
+        back: "/preview-images/black-back.png",
       },
-      name: 'Black',
+      name: "Black",
     },
     {
-      color: '#4CAF50',
+      color: "#4CAF50",
       previewImages: {
-        front: '/preview-images/Green.png',
-        back: '/preview-images/green-back.png',
+        front: "/preview-images/Green.png",
+        back: "/preview-images/green-back.png",
       },
-      name: 'Green',
+      name: "Green",
     },
     {
-      color: '#E6E6FA',
+      color: "#E6E6FA",
       previewImages: {
-        front: '/preview-images/Levender.png',
-        back: '/preview-images/levender-back.png',
+        front: "/preview-images/Levender.png",
+        back: "/preview-images/levender-back.png",
       },
-      name: 'Lavender',
+      name: "Lavender",
     },
     {
-      color: '#800000',
+      color: "#800000",
       previewImages: {
-        front: '/preview-images/Maroon.png',
-        back: '/preview-images/maroon-back.png',
+        front: "/preview-images/Maroon.png",
+        back: "/preview-images/maroon-back.png",
       },
-      name: 'Maroon',
+      name: "Maroon",
     },
     {
-      color: '#000080',
+      color: "#000080",
       previewImages: {
-        front: '/preview-images/Navy-Blue.png',
-        back: '/preview-images/navy-blue-back.png',
+        front: "/preview-images/Navy-Blue.png",
+        back: "/preview-images/navy-blue-back.png",
       },
-      name: 'Navy Blue',
+      name: "Navy Blue",
     },
     {
-      color: '#FF0000',
+      color: "#FF0000",
       previewImages: {
-        front: '/preview-images/Red.png',
-        back: '/preview-images/red-back.png',
+        front: "/preview-images/Red.png",
+        back: "/preview-images/red-back.png",
       },
-      name: 'Red',
+      name: "Red",
     },
     {
-      color: '#87CEEB',
+      color: "#87CEEB",
       previewImages: {
-        front: '/preview-images/Sky-Blue.png',
-        back: '/preview-images/sky-blue-back.png',
+        front: "/preview-images/Sky-Blue.png",
+        back: "/preview-images/sky-blue-back.png",
       },
-      name: 'Sky Blue',
+      name: "Sky Blue",
     },
     {
-      color: '#FFFFFF',
+      color: "#FFFFFF",
       previewImages: {
-        front: '/preview-images/White.png',
-        back: '/preview-images/white-back.png',
+        front: "/preview-images/White.png",
+        back: "/preview-images/white-back.png",
       },
-      name: 'White',
+      name: "White",
     },
   ];
 
-  const [viewSide, setViewSide] = useState('front');
+  const [viewSide, setViewSide] = useState("front");
   const [selectedColor, setSelectedColor] = useState(tshirtColors[0]);
   const [elements, setElements] = useState({
     front: [],
@@ -89,12 +89,12 @@ const CustomizeYourTee = () => {
   const [selectedElement, setSelectedElement] = useState(null);
   const [draggedElement, setDraggedElement] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [newText, setNewText] = useState('Type your text');
+  const [newText, setNewText] = useState("Type your text");
   const [textStyle, setTextStyle] = useState({
     fontSize: 24,
-    color: '#000000',
-    fontWeight: 'normal',
-    fontFamily: 'Arial',
+    color: "#000000",
+    fontWeight: "normal",
+    fontFamily: "Arial",
     rotation: 0,
   });
   const [imgStyle, setImgStyle] = useState({
@@ -110,13 +110,13 @@ const CustomizeYourTee = () => {
     front: null,
     back: null,
   });
-  const [instructions, setInstructions] = useState('');
+  const [instructions, setInstructions] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false); // State for form visibility
-  const [name, setName] = useState(''); // State for name input
-  const [phone, setPhone] = useState(''); // State for phone number input
-  const [customerEmail, setCustomerEmail] = useState('');
-  const [selectedSize, setSelectedSize] = useState('');
+  const [name, setName] = useState(""); // State for name input
+  const [phone, setPhone] = useState(""); // State for phone number input
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(0);
 
   const [fonts, setFonts] = useState([]); // State to store fonts
@@ -126,12 +126,12 @@ const CustomizeYourTee = () => {
     const fetchFonts = async () => {
       try {
         const response = await fetch(
-          'https://www.googleapis.com/webfonts/v1/webfonts?key=AIzaSyAM0LG9pK8MEj86465G-u2_f0ds_5kc4iU',
+          "https://www.googleapis.com/webfonts/v1/webfonts?key=AIzaSyAM0LG9pK8MEj86465G-u2_f0ds_5kc4iU"
         );
         const data = await response.json();
         setFonts(data.items); // Set fonts to state
       } catch (error) {
-        console.error('Error fetching fonts:', error);
+        console.error("Error fetching fonts:", error);
       } finally {
         setIsLoading(false); // Stop loading once fonts are fetched
       }
@@ -141,13 +141,13 @@ const CustomizeYourTee = () => {
   }, []);
 
   useEffect(() => {
-      const guestCustomerInfo = getGuestCustomerInfo();
-      setCustomerEmail(guestCustomerInfo.email);
+    const guestCustomerInfo = getGuestCustomerInfo();
+    setCustomerEmail(guestCustomerInfo.email);
   }, []);
 
   const handleFormSubmit = async () => {
     if (!name?.trim() || !phone?.trim()) {
-      toast.error('Please fill out all fields.');
+      toast.error("Please fill out all fields.");
       return;
     }
 
@@ -156,12 +156,12 @@ const CustomizeYourTee = () => {
     const phoneRegexWith88 = /^\+88\d{11}$/; // +88 followed by 11 digits
 
     if (!phoneRegexNormal.test(phone) && !phoneRegexWith88.test(phone)) {
-      toast.error('Phone must be 11 digits, or +88 followed by 11 digits.');
+      toast.error("Phone must be 11 digits, or +88 followed by 11 digits.");
       return;
     }
 
     if (!previewImages?.front || !previewImages?.back) {
-      toast.error('Front and back previews are required.');
+      toast.error("Front and back previews are required.");
       return;
     }
 
@@ -172,59 +172,59 @@ const CustomizeYourTee = () => {
     try {
       const submitSide = async (side) => {
         const fd = new FormData();
-        fd.append('color', selectedColor.name);
-        fd.append('side', side);
-        fd.append('name', name);
-        fd.append('phone', phone);
-        fd.append('size', selectedSize);
-        fd.append('quantity', quantity);
-        if (customerEmail) fd.append('email', customerEmail); // make sure server supports this
-        if (instructions) fd.append('specialInstructions', instructions);
-        fd.append('groupId', groupId); // server should store this to link both sides
+        fd.append("color", selectedColor.name);
+        fd.append("side", side);
+        fd.append("name", name);
+        fd.append("phone", phone);
+        fd.append("size", selectedSize);
+        fd.append("quantity", quantity);
+        if (customerEmail) fd.append("email", customerEmail); // make sure server supports this
+        if (instructions) fd.append("specialInstructions", instructions);
+        fd.append("groupId", groupId); // server should store this to link both sides
 
         const dataUrl =
-          side === 'front' ? previewImages.front : previewImages.back;
+          side === "front" ? previewImages.front : previewImages.back;
         const blob = dataURLToBlob(dataUrl);
-        fd.append('previewImage', blob, `design-image-${side}.png`);
+        fd.append("previewImage", blob, `design-image-${side}.png`);
 
         // Do NOT set Content-Type manually for FormData in the browser.
         const { data } = await axiosPublic.post(
-          '/admin/send-customize-tee-request',
-          fd,
+          "/admin/send-customize-tee-request",
+          fd
         );
         const reqId = data?.id;
-        if (!reqId) throw new Error('Missing id in response for ' + side);
+        if (!reqId) throw new Error("Missing id in response for " + side);
 
         const sideElements = elements?.[side] ?? [];
 
         // console.log(elements[side],side);
 
         const textCalls = sideElements
-          .filter((el) => el.type === 'text')
+          .filter((el) => el.type === "text")
           .map((el) =>
-            axiosPublic.post(`/admin/customized-text-element/${reqId}`, el),
+            axiosPublic.post(`/admin/customized-text-element/${reqId}`, el)
           );
 
         const imageCalls = sideElements
-          .filter((el) => el.type === 'image')
+          .filter((el) => el.type === "image")
           .map((el) => {
             const imgFd = new FormData();
             imgFd.append(
-              'image',
+              "image",
               dataURLToBlob(el.content),
-              'element-image.png',
+              "element-image.png"
             );
             // append numeric props as strings
             [
-              'height',
-              'width',
-              'originalHeight',
-              'originalWidth',
-              'x',
-              'y',
-              'scale',
-              'rotation',
-              'zIndex',
+              "height",
+              "width",
+              "originalHeight",
+              "originalWidth",
+              "x",
+              "y",
+              "scale",
+              "rotation",
+              "zIndex",
             ].forEach((k) => {
               if (el[k] != null) imgFd.append(k, String(el[k]));
               else if (el.style[k] != null)
@@ -232,7 +232,7 @@ const CustomizeYourTee = () => {
             });
             return axiosPublic.post(
               `/admin/customized-image-element/${reqId}`,
-              imgFd,
+              imgFd
             );
           });
 
@@ -241,32 +241,19 @@ const CustomizeYourTee = () => {
       };
 
       // Run both sides in parallel
-      await Promise.all([submitSide('front'), submitSide('back')]);
+      await Promise.all([submitSide("front"), submitSide("back")]);
 
       toast.success(
-        'Your design request has been sent! We will contact you soon.',
+        "Your design request has been sent! We will contact you soon."
       );
       setIsPreviewOpen(false);
       setIsFormOpen(false);
     } catch (error) {
-      console.error('Error while sending request:', error);
-      toast.error('Failed to send your design request.');
+      console.error("Error while sending request:", error);
+      toast.error("Failed to send your design request.");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleTouchStart = (e, element) => {
-    const touch = e.touches[0];
-    const mouseEvent = new MouseEvent('mousedown', {
-      clientX: touch.clientX,
-      clientY: touch.clientY,
-    });
-    handleMouseDownEnhanced(mouseEvent, element);
-  };
-
-  const handleTouchEnd = () => {
-    handleMouseUpEnhanced();
   };
 
   // Add text element
@@ -275,7 +262,7 @@ const CustomizeYourTee = () => {
 
     const newElement = {
       id: Date.now(),
-      type: 'text',
+      type: "text",
       content: newText,
       x: 150,
       y: 200,
@@ -314,7 +301,7 @@ const CustomizeYourTee = () => {
 
         const newElement = {
           id: Date.now(),
-          type: 'image',
+          type: "image",
           content: e.target.result,
           x: 150,
           y: 200,
@@ -336,6 +323,10 @@ const CustomizeYourTee = () => {
     reader.readAsDataURL(file);
   };
 
+  // mouse down touch start
+  // mouse down touch start
+  // mouse down touch start
+
   // Mouse event handlers
   const handleMouseDown = (e, element) => {
     e.preventDefault();
@@ -351,6 +342,18 @@ const CustomizeYourTee = () => {
     });
   };
 
+  const handleTouchStart = (e, element) => {
+    const touch = e.touches[0];
+    const mouseEvent = new MouseEvent("mousedown", {
+      clientX: touch.clientX,
+      clientY: touch.clientY,
+    });
+    handleMouseDownEnhanced(mouseEvent, element);
+  };
+
+  //   move
+  //   move
+  //   move
   const handleMouseMove = (e) => {
     if (!draggedElement) return;
 
@@ -363,14 +366,52 @@ const CustomizeYourTee = () => {
       [viewSide]: prevState[viewSide].map((el) =>
         el.id === draggedElement
           ? { ...el, x: x - dragOffset.x, y: y - dragOffset.y }
-          : el,
+          : el
       ),
     }));
   };
 
+  const handleElementStart = (e, element) => {
+    e.preventDefault();
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left || e.touches?.[0]?.clientX - rect.left;
+    const y = e.clientY - rect.top || e.touches?.[0]?.clientY - rect.top;
+
+    setDraggedElement(element.id);
+    setSelectedElement(element.id);
+    setDragOffset({
+      x: x - element.x,
+      y: y - element.y,
+    });
+  };
+
+  const handleMove = (e) => {
+    if (!draggedElement) return;
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    // Get current position based on input type
+    const x = e.clientX - rect.left || e.touches?.[0]?.clientX - rect.left;
+    const y = e.clientY - rect.top || e.touches?.[0]?.clientY - rect.top;
+
+    setElements((prevState) => ({
+      ...prevState,
+      [viewSide]: prevState[viewSide].map((el) =>
+        el.id === draggedElement
+          ? { ...el, x: x - dragOffset.x, y: y - dragOffset.y }
+          : el
+      ),
+    }));
+  };
+
+  const handleEnd = () => {
+    // Remove both mouse and touch listeners
+   setDraggedElement(null);
+
+  };
+
   const handleTouchMove = (e) => {
     const touch = e.touches[0];
-    const mouseEvent = new MouseEvent('mousemove', {
+    const mouseEvent = new MouseEvent("mousemove", {
       clientX: touch.clientX,
       clientY: touch.clientY,
     });
@@ -379,6 +420,10 @@ const CustomizeYourTee = () => {
 
   const handleMouseUp = () => {
     setDraggedElement(null);
+  };
+
+  const handleTouchEnd = () => {
+    handleMouseUpEnhanced();
   };
 
   // Delete element
@@ -399,7 +444,7 @@ const CustomizeYourTee = () => {
       // Calculate new dimensions while maintaining aspect ratio
       let newWidth, newHeight;
 
-      if (elementToReset.type === 'image') {
+      if (elementToReset.type === "image") {
         const maxDimension = 200; // Maximum size for the larger dimension
         const aspectRatio =
           elementToReset.originalWidth / elementToReset.originalHeight;
@@ -423,11 +468,11 @@ const CustomizeYourTee = () => {
         y: 200,
         // Reset size while maintaining aspect ratio for images
         width:
-          elementToReset.type === 'image' ? newWidth : elementToReset.width,
+          elementToReset.type === "image" ? newWidth : elementToReset.width,
         height:
-          elementToReset.type === 'image' ? newHeight : elementToReset.height,
+          elementToReset.type === "image" ? newHeight : elementToReset.height,
         style:
-          elementToReset.type === 'text'
+          elementToReset.type === "text"
             ? { ...textStyle } // Reset to default text style
             : { ...imgStyle }, // Reset to default image style
       };
@@ -436,7 +481,7 @@ const CustomizeYourTee = () => {
       setElements((prevState) => ({
         ...prevState,
         [viewSide]: prevState[viewSide].map((el) =>
-          el.id === id ? resetElement : el,
+          el.id === id ? resetElement : el
         ),
       }));
     }
@@ -448,7 +493,7 @@ const CustomizeYourTee = () => {
     setElements((prevState) => ({
       ...prevState,
       [viewSide]: prevState[viewSide].map((el) =>
-        el.id === id ? { ...el, ...updates } : el,
+        el.id === id ? { ...el, ...updates } : el
       ),
     }));
   };
@@ -456,11 +501,11 @@ const CustomizeYourTee = () => {
   const generatePreviews = async () => {
     setIsLoading(true);
     try {
-      const backCanvas = await generatePreview('back');
-      const backImageUrl = backCanvas.toDataURL('image/jpeg', 0.8);
+      const backCanvas = await generatePreview("back");
+      const backImageUrl = backCanvas.toDataURL("image/jpeg", 0.8);
 
-      const frontCanvas = await generatePreview('front');
-      const frontImageUrl = frontCanvas.toDataURL('image/jpeg', 0.8);
+      const frontCanvas = await generatePreview("front");
+      const frontImageUrl = frontCanvas.toDataURL("image/jpeg", 0.8);
 
       setPreviewImages({
         front: frontImageUrl,
@@ -473,21 +518,21 @@ const CustomizeYourTee = () => {
 
       setIsPreviewOpen(true);
     } catch (error) {
-      toast.error('Failed to generate preview');
+      toast.error("Failed to generate preview");
     } finally {
       setIsLoading(false);
     }
   };
 
   const generatePreview = async (side) => {
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = 400;
     canvas.height = 500;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
 
     try {
       const bgImg = new Image();
-      bgImg.crossOrigin = 'anonymous';
+      bgImg.crossOrigin = "anonymous";
 
       await new Promise((resolve, reject) => {
         bgImg.onload = () => {
@@ -498,16 +543,16 @@ const CustomizeYourTee = () => {
           ctx.fillStyle = selectedColor.color;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           ctx.strokeStyle =
-            selectedColor.color === '#FFFFFF'
-              ? '#E5E7EB'
-              : 'rgba(255,255,255,0.2)';
+            selectedColor.color === "#FFFFFF"
+              ? "#E5E7EB"
+              : "rgba(255,255,255,0.2)";
           ctx.lineWidth = 2;
           ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
           resolve();
         };
 
         setTimeout(() => {
-          reject(new Error('Image loading timeout'));
+          reject(new Error("Image loading timeout"));
         }, 5000);
 
         bgImg.src = selectedColor.previewImages[side];
@@ -517,23 +562,23 @@ const CustomizeYourTee = () => {
         ctx.save();
         ctx.translate(
           element.x + element.width / 2,
-          element.y + element.height / 2,
+          element.y + element.height / 2
         );
         ctx.rotate((element.style.rotation * Math.PI) / 180);
         ctx.translate(
           -element.x - element.width / 2,
-          -element.y - element.height / 2,
+          -element.y - element.height / 2
         );
 
-        if (element.type === 'text') {
+        if (element.type === "text") {
           ctx.font = `${element.style.fontWeight} ${element.style.fontSize}px ${element.style.fontFamily}`;
           ctx.fillStyle = element.style.color;
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'top';
+          ctx.textAlign = "left";
+          ctx.textBaseline = "top";
           ctx.fillText(element.content, element.x, element.y);
-        } else if (element.type === 'image') {
+        } else if (element.type === "image") {
           const img = new Image();
-          img.crossOrigin = 'anonymous';
+          img.crossOrigin = "anonymous";
 
           await new Promise((resolve) => {
             img.onload = () => {
@@ -542,12 +587,12 @@ const CustomizeYourTee = () => {
                 element.x,
                 element.y,
                 element.width,
-                element.height,
+                element.height
               );
               resolve();
             };
             img.onerror = () => {
-              console.warn('Design image failed to load');
+              console.warn("Design image failed to load");
               resolve();
             };
             img.src = element.content;
@@ -558,7 +603,7 @@ const CustomizeYourTee = () => {
 
       return canvas;
     } catch (error) {
-      console.error('Error creating preview:', error);
+      console.error("Error creating preview:", error);
       throw error;
     }
   };
@@ -569,27 +614,27 @@ const CustomizeYourTee = () => {
     const downloadCanvas = (canvas, side) => {
       canvas.toBlob(
         (blob) => {
-          const link = document.createElement('a');
+          const link = document.createElement("a");
           link.download = `tshirt-design-${selectedColor.name.toLowerCase()}-${side}-${Date.now()}.png`;
           link.href = URL.createObjectURL(blob);
           link.click();
           URL.revokeObjectURL(link.href);
         },
-        'image/png',
-        1.0,
+        "image/png",
+        1.0
       );
     };
 
-    downloadCanvas(previewCanvases.front, 'front');
-    downloadCanvas(previewCanvases.back, 'back');
+    downloadCanvas(previewCanvases.front, "front");
+    downloadCanvas(previewCanvases.back, "back");
     setIsPreviewOpen(false);
-    toast.success('Design downloaded successfully');
+    toast.success("Design downloaded successfully");
   };
 
   const axiosPublic = useAxiosPublic();
 
   const dataURLToBlob = (dataURL) => {
-    const byteString = atob(dataURL.split(',')[1]);
+    const byteString = atob(dataURL.split(",")[1]);
     const arrayBuffer = new ArrayBuffer(byteString.length);
     const uint8Array = new Uint8Array(arrayBuffer);
 
@@ -597,7 +642,7 @@ const CustomizeYourTee = () => {
       uint8Array[i] = byteString.charCodeAt(i);
     }
 
-    const mimeType = dataURL.split(';')[0].split(':')[1];
+    const mimeType = dataURL.split(";")[0].split(":")[1];
     return new Blob([uint8Array], { type: mimeType });
   };
 
@@ -605,11 +650,11 @@ const CustomizeYourTee = () => {
     setIsFormOpen(true);
   };
 
-  const panelStyle = 'bg-white rounded-xl shadow-lg border border-gray-200 p-6';
+  const panelStyle = "bg-white rounded-xl shadow-lg border border-gray-200 p-6";
   const headingTitle =
-    'flex items-center gap-3 text-lg font-semibold text-black mb-6';
+    "flex items-center gap-3 text-lg font-semibold text-black mb-6";
   const buttonStyle =
-    'w-full px-4 py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black';
+    "w-full px-4 py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black";
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -656,6 +701,9 @@ const CustomizeYourTee = () => {
             handleTouchMove={handleTouchMove}
             handleTouchEnd={handleTouchEnd}
             handleTouchStart={handleTouchStart}
+            handleMove={handleMove}
+            handleElementStart={handleElementStart}
+            handleEnd={handleEnd}
           />
 
           <RightPanel
@@ -732,12 +780,12 @@ const CustomizeYourTee = () => {
                   disabled={isLoading}
                   className={`px-4 py-2 rounded-lg text-white transition-colors duration-200 flex items-center gap-2 ${
                     isLoading
-                      ? 'bg-orange-400'
-                      : 'bg-orange-600 hover:bg-orange-700'
+                      ? "bg-orange-400"
+                      : "bg-orange-600 hover:bg-orange-700"
                   }`}
                 >
                   {isLoading ? (
-                    'Processing...'
+                    "Processing..."
                   ) : (
                     <>
                       <Printer size={18} />
@@ -785,11 +833,11 @@ const CustomizeYourTee = () => {
                   disabled={isLoading}
                   className={`px-4 py-2 rounded-lg text-white transition-colors duration-200 flex items-center gap-2 ${
                     isLoading
-                      ? 'bg-orange-400'
-                      : 'bg-orange-600 hover:bg-orange-700'
+                      ? "bg-orange-400"
+                      : "bg-orange-600 hover:bg-orange-700"
                   }`}
                 >
-                  {isLoading ? 'Submitting...' : 'Submit'}
+                  {isLoading ? "Submitting..." : "Submit"}
                 </button>
               </div>
             </div>

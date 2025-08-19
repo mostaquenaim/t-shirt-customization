@@ -5,8 +5,8 @@ export default function Home() {
   return (
     <div >
       <main >
-        <TeeCustomization></TeeCustomization>
-        {/* <CustomizeYourTee></CustomizeYourTee> */}
+        {/* <TeeCustomization></TeeCustomization> */}
+        <CustomizeYourTee></CustomizeYourTee>
       </main>
     </div>
   );
