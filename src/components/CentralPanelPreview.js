@@ -52,19 +52,7 @@ const CentralPanelPreview = ({
   const [fillColor, setFillColor] = useState("fill-[#000000]");
   // console.log(selectedColor.color, 'dcdsd');
 
-  const handleControl = (element, e) => {
-    console.log(selectedElement);
-    console.log(element);
-    const controlSection = document.getElementById("control");
-    if (controlSection) {
-      controlSection.scrollIntoView({
-        behavior: "smooth",
-        block: "start", // Aligns the section at the top of the viewport
-      });
-    }
-    console.log(element.id);
-    setSelectedElement(element.id);
-  };
+  
 
   useEffect(() => {
     setFillColor(`fill-[${selectedColor.color}]`);
