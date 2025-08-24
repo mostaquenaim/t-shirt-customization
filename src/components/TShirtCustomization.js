@@ -96,7 +96,7 @@ const CustomizeYourTee = () => {
   const [selectedSize, setSelectedSize] = useState('M');
   const [quantity, setQuantity] = useState(1);
   const [fonts, setFonts] = useState([]); // State to store fonts
-  const [device, setDevice] = useState('laptop');
+  const [device, setDevice] = useState('');
   const [isResizing, setIsResizing] = useState(false);
   const [isRotating, setIsRotating] = useState(false);
   const [initialSize, setInitialSize] = useState({ width: 0, height: 0 });
@@ -163,6 +163,9 @@ const CustomizeYourTee = () => {
     setRotationCenter(elementCenter);
   };
 
+  // font size
+  // useEffect((),[])
+
   useEffect(() => {
     // Fetch fonts from Google Fonts API
     const fetchFonts = async () => {
@@ -182,11 +185,19 @@ const CustomizeYourTee = () => {
     fetchFonts(); // Fetch fonts on component mount
   }, []);
 
+  // device decision
   useEffect(() => {
     const updateDevice = () => {
       const width = window.innerWidth;
       if (width <= 600) {
         setDevice('mobile');
+        setTextStyle({
+          fontSize: 14,
+          color: '#000000',
+          fontWeight: 'normal',
+          fontFamily: 'Arial',
+          rotation: 0,
+        });
       } else if (width <= 1024) {
         setDevice('tablet');
       } else {
@@ -210,7 +221,10 @@ const CustomizeYourTee = () => {
     const area = {
       left:
         canvasRef.current && viewSide === 'front'
-          ? canvasRef.current.offsetWidth * 0.27
+          ? // ? device === 'mobile' ?
+            // canvasRef.current.offsetWidth * 0.27
+            // :
+            canvasRef.current.offsetWidth * 0.27
           : canvasRef.current && viewSide === 'back'
           ? canvasRef.current.offsetWidth * 0.27
           : 80,
@@ -235,7 +249,7 @@ const CustomizeYourTee = () => {
     };
 
     setPrintArea(area);
-  }, [canvasRef, viewSide]);
+  }, [canvasRef, viewSide, device]);
 
   const handleFormSubmit = async () => {
     
@@ -252,30 +266,6 @@ const CustomizeYourTee = () => {
 
   const handleTouchEnd = () => {
     handleMouseUpEnhanced();
-  };
-
-  // Add text element
-  const addText = () => {
-    if (!newText.trim()) return;
-
-    const newElement = {
-      id: Date.now(),
-      type: 'text',
-      content: newText,
-      x: device === 'mobile' ? 75 : 150,
-      y: device === 'mobile' ? 100 : 200,
-      width: device === 'mobile' ? 100 : 150,
-      height: 40,
-      opacity: 'isInside',
-      style: { ...textStyle, fontSize: device === 'mobile' ? 14 : 24 },
-    };
-
-    setElements((prevState) => ({
-      ...prevState,
-      [viewSide]: [...prevState[viewSide], newElement],
-    }));
-    // setNewText('');
-    setSelectedElement(newElement.id);
   };
 
   // Add text element font size width and height
@@ -312,7 +302,7 @@ const CustomizeYourTee = () => {
   // helper: compute width/height from text + font
   const computeTextBox = (text, style, device, canvasRef) => {
     const baseFontSize = device === 'mobile' ? 14 : 24;
-    const fontSize = style.fontSize ?? baseFontSize;
+    const fontSize = style.fontSize || baseFontSize;
     const fontWeight = style.fontWeight || 'normal';
     const fontStyle = style.fontStyle || 'normal';
     const fontFamily = style.fontFamily || 'Arial, sans-serif';
@@ -334,8 +324,8 @@ const CustomizeYourTee = () => {
         ? parseFloat(style.lineHeight) * fontSize
         : Math.round(fontSize * 1.2);
 
-    const width = textWidth ;
-    const height = lineHeight ;
+    const width = textWidth;
+    const height = lineHeight;
 
     return { width, height, fontSize };
   };
@@ -655,19 +645,6 @@ const CustomizeYourTee = () => {
     toast.success('Design downloaded successfully');
   };
 
-  const dataURLToBlob = (dataURL) => {
-    const byteString = atob(dataURL.split(',')[1]);
-    const arrayBuffer = new ArrayBuffer(byteString.length);
-    const uint8Array = new Uint8Array(arrayBuffer);
-
-    for (let i = 0; i < byteString.length; i++) {
-      uint8Array[i] = byteString.charCodeAt(i);
-    }
-
-    const mimeType = dataURL.split(';')[0].split(':')[1];
-    return new Blob([uint8Array], { type: mimeType });
-  };
-
   const sendRequest = async () => {
     setIsFormOpen(true);
   };
@@ -774,8 +751,7 @@ const CustomizeYourTee = () => {
             ? 'isPartiallyOutside'
             : 'isInside',
         });
-      }
-      if (element && element.type === 'text') {
+      } else if (element && element.type === 'text') {
         // Avoid parseInt on floats; use Math.round for pixel ints
         const nextWidth = Math.max(20, Math.round(newWidth));
         const nextHeight = Math.max(20, Math.round(newHeight));
@@ -792,24 +768,18 @@ const CustomizeYourTee = () => {
           Math.min(400, Math.round(initialFS * scale)),
         );
 
-        // Optionally keep box height consistent with font metrics (recommended)
         const style = element.style || {};
-        console.log(element,'textstyle');
-        const lineHeightPx =
-          typeof style.lineHeight === 'number'
-            ? style.lineHeight * newFontSize
-            : style.lineHeight
-            ? parseFloat(style.lineHeight) * newFontSize
-            : Math.round(newFontSize );
+        // console.log(element, 'textstyle');
+
+        // Simple calculation: font size + padding
         const padding = 8;
-        const adjustedHeight = Math.max(
-          20,
-          Math.round(lineHeightPx ),
-        );
+        const adjustedHeight = Math.max(20, Math.round(newFontSize));
+
+        console.log(adjustedHeight, 'adjustedHeight');
 
         updateElement(selectedElement, {
           width: nextWidth,
-          height: adjustedHeight, // keep height tied to font metrics
+          height: adjustedHeight,
           opacity: isOutsidePrintArea
             ? 'isOutsidePrintArea'
             : isPartiallyOutside
@@ -982,7 +952,7 @@ const CustomizeYourTee = () => {
                   <img
                     src={previewImages.front}
                     alt="Front Design Preview"
-                    className="w-48 md:w-full h-auto rounded-lg shadow-md transition-transform duration-300 hover:scale-105"
+                    className="w-48 md:w-64 h-auto rounded-lg shadow-md transition-transform duration-300 hover:scale-105"
                   />
                 </div>
                 <div className="flex flex-col items-center">
@@ -992,7 +962,7 @@ const CustomizeYourTee = () => {
                   <img
                     src={previewImages.back}
                     alt="Back Design Preview"
-                    className="w-48 md:w-full h-auto rounded-lg shadow-md transition-transform duration-300 hover:scale-105"
+                    className="w-48 md:w-64 h-auto rounded-lg shadow-md transition-transform duration-300 hover:scale-105"
                   />
                 </div>
               </div>
