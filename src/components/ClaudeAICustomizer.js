@@ -1,4 +1,5 @@
-import React, { useState, useRef, useCallback } from 'react';
+'use client'
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Type, Image, RotateCw, Trash2, Move, Square } from 'lucide-react';
 
 const TShirtCustomizer = () => {
@@ -135,7 +136,7 @@ const TShirtCustomizer = () => {
     setResizeState({ isResizing: false, startSize: { width: 0, height: 0 }, startPos: { x: 0, y: 0 } });
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
     return () => {

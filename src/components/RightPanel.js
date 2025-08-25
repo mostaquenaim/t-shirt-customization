@@ -67,8 +67,8 @@ const RightPanel = ({
                     </div>
                     <input
                       type="range"
-                      min="12"
-                      max="72"
+                      min="5"
+                      max="120"
                       value={element.style.fontSize}
                       onChange={(e) =>
                         updateElement(element.id, {

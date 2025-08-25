@@ -1,3 +1,4 @@
+import TShirtCustomizer from "@/components/ClaudeAICustomizer";
 import CustomizeYourTee from "@/components/TShirtCustomization";
 
 export default function Home() {
@@ -5,6 +6,7 @@ export default function Home() {
     <div >
       <main >
         <CustomizeYourTee></CustomizeYourTee>
+        {/* <TShirtCustomizer></TShirtCustomizer> */}
       </main>
     </div>
   );

@@ -105,6 +105,9 @@ const CustomizeYourTee = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [address, setAddress] = useState("");
   const [printArea, setPrintArea] = useState();
+  const [printWidth, setPrintWidth] = useState(180);
+  const [printHeight, setPrintHeight] = useState(270);
+  const [isElementOutOfBounds, setIsElementOutOfBounds] = useState(false);
   const [textStyle, setTextStyle] = useState({
     fontSize: 24,
     color: "#000000",
@@ -125,6 +128,17 @@ const CustomizeYourTee = () => {
     front: null,
     back: null,
   });
+
+  // set print width and height
+  useEffect(() => {
+    if (device === "mobile") {
+      setPrintWidth(100);
+      setPrintHeight(162);
+    } else {
+      setPrintWidth(180);
+      setPrintHeight(270);
+    }
+  }, [device]);
 
   // fonts fetch
   useEffect(() => {
@@ -207,7 +221,6 @@ const CustomizeYourTee = () => {
           : 375,
     };
 
-    console.log(area);
     setPrintArea(area);
   }, [canvasRef, viewSide, device]);
 
@@ -226,9 +239,14 @@ const CustomizeYourTee = () => {
     ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
 
     // measure text width safely
-    const textWidth = Math.ceil(ctx.measureText(text || " ").width);
+    const textWidth = Math.min(
+      printWidth,
+      Math.ceil(ctx.measureText(text || " ").width)
+    );
 
-    // Line height: use provided, else 1.2x font size
+    console.log(textWidth, "textWidth");
+
+    // Line height
     const lineHeight =
       typeof style.lineHeight === "number"
         ? style.lineHeight * fontSize
@@ -242,13 +260,68 @@ const CustomizeYourTee = () => {
     return { width, height, fontSize };
   };
 
+  // is element out of bound
+  const isElementInBounds = (item, printArea) => {
+    const element = elements[viewSide].find((el) => el.id === item);
+
+    if (element.style?.rotation === 0 || !element.style?.rotation) {
+      // Simple case - no rotation
+      return (
+        element.x >= printArea.left &&
+        element.y >= printArea.top &&
+        element.x + element.width <= printArea.right &&
+        element.y + element.height <= printArea.bottom
+      );
+    }
+
+    // For rotated elements, calculate the four corners after rotation
+    const centerX = element.x + element.width / 2;
+    const centerY = element.y + element.height / 2;
+    const halfWidth = element.width / 2;
+    const halfHeight = element.height / 2;
+    const radians = (element.style.rotation * Math.PI) / 180;
+    const cos = Math.cos(radians);
+    const sin = Math.sin(radians);
+
+    // Calculate rotated corner positions
+    const corners = [
+      // Top-left corner
+      {
+        x: centerX + (-halfWidth * cos - -halfHeight * sin),
+        y: centerY + (-halfWidth * sin + -halfHeight * cos),
+      },
+      // Top-right corner
+      {
+        x: centerX + (halfWidth * cos - -halfHeight * sin),
+        y: centerY + (halfWidth * sin + -halfHeight * cos),
+      },
+      // Bottom-right corner
+      {
+        x: centerX + (halfWidth * cos - halfHeight * sin),
+        y: centerY + (halfWidth * sin + halfHeight * cos),
+      },
+      // Bottom-left corner
+      {
+        x: centerX + (-halfWidth * cos - halfHeight * sin),
+        y: centerY + (-halfWidth * sin + halfHeight * cos),
+      },
+    ];
+
+    // Check if all corners are within the print area bounds
+    return corners.every(
+      (corner) =>
+        corner.x >= printArea.left &&
+        corner.x <= printArea.right &&
+        corner.y >= printArea.top &&
+        corner.y <= printArea.bottom
+    );
+  };
+
   // handle move
   // handle end
   // handle move
   const handleMove = (e, element) => {
-    // console.log(e, 'lll');
     const elm = elements[viewSide]?.find((item) => item.id === element);
-    // console.log(elm);
     if (!draggedElement && !isResizing && !isRotating) return;
 
     // Check if element is outside print area
@@ -274,8 +347,8 @@ const CustomizeYourTee = () => {
       e.clientY - rect.top || e.touches?.[0]?.clientY - rect.top
     );
 
-    const maxWidth = device === "mobile" ? 200 : 400;
-    const maxHeight = device === "mobile" ? 250 : 500;
+    const maxWidth = device === "mobile" ? 240 : 400;
+    const maxHeight = device === "mobile" ? 300 : 500;
 
     if (draggedElement && !isResizing && !isRotating) {
       // Existing drag logic
@@ -291,25 +364,46 @@ const CustomizeYourTee = () => {
                 y: parseInt(
                   Math.max(0, Math.min(maxHeight - el.height, y - dragOffset.y))
                 ),
-                opacity: isOutsidePrintArea
-                  ? "isOutsidePrintArea"
-                  : isPartiallyOutside
-                  ? "isPartiallyOutside"
-                  : "isInside",
+                // opacity: isOutsidePrintArea
+                //   ? "isOutsidePrintArea"
+                //   : isPartiallyOutside
+                //   ? "isPartiallyOutside"
+                //   : "isInside",
               }
             : el
         ),
       }));
     } else if (isResizing) {
-      const deltaX = x - dragOffset.x;
-      const deltaY = y - dragOffset.y;
-      const delta = Math.max(deltaX, deltaY);
-
-      let newWidth = parseInt(Math.max(20, initialSize.width + delta));
-      let newHeight = parseInt(initialSize.height + delta);
-
       const element = elements[viewSide].find(
         (el) => el.id === selectedElement
+      );
+
+      if (!element) return;
+
+      const rotation = element.style?.rotation || 0;
+      let deltaX = x - dragOffset.x;
+      let deltaY = y - dragOffset.y;
+
+      if (rotation != 0) {
+        const radians = (-rotation * Math.PI) / 180; // Negative because we want to inverse the rotation
+        const cos = Math.cos(radians);
+        const sin = Math.sin(radians);
+
+        // Transform delta to element's local coordinates
+        const transformedDeltaX = deltaX * cos - deltaY * sin;
+        const transformedDeltaY = deltaX * sin + deltaY * cos;
+
+        deltaX = transformedDeltaX;
+        deltaY = transformedDeltaY;
+      }
+
+      const delta = Math.max(deltaX, deltaY);
+
+      let newWidth = parseInt(
+        Math.min(printWidth, Math.max(20, initialSize.width + delta))
+      );
+      let newHeight = parseInt(
+        Math.min(printHeight, initialSize.height + delta)
       );
 
       // Maintain aspect ratio for images
@@ -325,23 +419,28 @@ const CustomizeYourTee = () => {
         updateElement(selectedElement, {
           width: newWidth,
           height: newHeight,
-          opacity: isOutsidePrintArea
-            ? "isOutsidePrintArea"
-            : isPartiallyOutside
-            ? "isPartiallyOutside"
-            : "isInside",
+          // opacity: isOutsidePrintArea
+          //   ? "isOutsidePrintArea"
+          //   : isPartiallyOutside
+          //   ? "isPartiallyOutside"
+          //   : "isInside",
         });
-      } else if (element && element.type === "text") {
+      } 
+      
+      else if (element && element.type === "text") {
         // Avoid parseInt on floats; use Math.round for pixel ints
         const nextWidth = Math.max(20, Math.round(newWidth));
-        const nextHeight = Math.max(20, Math.round(newHeight));
+        const nextHeight = Math.max(5, Math.round(newHeight));
 
+        // console.log(initialSize);
         // Use uniform scale to prevent distortion (use the larger axis)
         const scaleX = nextWidth / Math.max(1, initialSize.width);
         const scaleY = nextHeight / Math.max(1, initialSize.height);
         const scale = Math.max(scaleX, scaleY);
 
         const initialFS = Number(initialFontSize) || 14;
+
+        // console.log(initialFS * scale,'okk');
         // Clamp font size to sane bounds
         const newFontSize = Math.max(
           8,
@@ -349,22 +448,19 @@ const CustomizeYourTee = () => {
         );
 
         const style = element.style || {};
-        // console.log(element, 'textstyle');
 
         // Simple calculation: font size + padding
         const padding = 8;
-        const adjustedHeight = Math.max(20, Math.round(newFontSize));
-
-        console.log(adjustedHeight, "adjustedHeight");
+        const adjustedHeight = Math.max(5, Math.round(newFontSize));
 
         updateElement(selectedElement, {
           width: nextWidth,
           height: adjustedHeight,
-          opacity: isOutsidePrintArea
-            ? "isOutsidePrintArea"
-            : isPartiallyOutside
-            ? "isPartiallyOutside"
-            : "isInside",
+          // opacity: isOutsidePrintArea
+          //   ? "isOutsidePrintArea"
+          //   : isPartiallyOutside
+          //   ? "isPartiallyOutside"
+          //   : "isInside",
           style: {
             ...style,
             fontSize: newFontSize,
@@ -379,6 +475,7 @@ const CustomizeYourTee = () => {
       const element = elements[viewSide].find(
         (el) => el.id === selectedElement
       );
+
       updateElement(selectedElement, {
         style: {
           ...element.style,
@@ -386,6 +483,9 @@ const CustomizeYourTee = () => {
         },
       });
     }
+
+    const checkElementBoundary = isElementInBounds(element, printArea);
+    setIsElementOutOfBounds(!checkElementBoundary);
   };
 
   const handleEnd = () => {
@@ -489,11 +589,11 @@ const CustomizeYourTee = () => {
           id: Date.now(),
           type: "image",
           content: e.target.result,
-          x: device === "mobile" ? 75 : 150,
-          y: device === "mobile" ? 100 : 200,
+          x: device === "mobile" ? 90 : 150,
+          y: device === "mobile" ? 120 : 200,
           width: newWidth,
           height: newHeight,
-          opacity: "isInside",
+          // opacity: "isInside",
           originalWidth: parseInt(img.width),
           originalHeight: parseInt(img.height),
           style: { ...imgStyle },
@@ -525,11 +625,11 @@ const CustomizeYourTee = () => {
       id: Date.now(),
       type: "text",
       content: newText,
-      x: device === "mobile" ? 75 : 150,
-      y: device === "mobile" ? 100 : 200,
+      x: device === "mobile" ? 90 : 150,
+      y: device === "mobile" ? 120 : 200,
       width, // <- follows font size & text length
       height, // <- follows font size (line-height)
-      opacity: "isInside",
+      // opacity: "isInside",
       style: { ...textStyle, fontSize }, // keep final fontSize used
     };
 
@@ -556,7 +656,6 @@ const CustomizeYourTee = () => {
   // resize
   // rotate
   const handleResizeStart = (e, element) => {
-    // console.log(element, 'lll');
     e.stopPropagation();
     setIsResizing(true);
     setSelectedElement(element.id);
@@ -722,8 +821,8 @@ const CustomizeYourTee = () => {
 
   const generatePreview = async (side) => {
     const canvas = document.createElement("canvas");
-    canvas.width = device === "mobile" ? 200 : 400;
-    canvas.height = device === "mobile" ? 250 : 500;
+    canvas.width = device === "mobile" ? 240 : 400;
+    canvas.height = device === "mobile" ? 300 : 500;
     const ctx = canvas.getContext("2d");
 
     try {
@@ -755,7 +854,7 @@ const CustomizeYourTee = () => {
       });
 
       for (const element of elements[`${side}`]) {
-        if (element.opacity === "isInside") {
+        if (!isElementOutOfBounds) {
           ctx.save();
           ctx.translate(
             element.x + element.width / 2,
@@ -919,6 +1018,9 @@ const CustomizeYourTee = () => {
             setSelectedElement={setSelectedElement}
             //print
             printArea={printArea}
+            isElementOutOfBounds={isElementOutOfBounds}
+            printHeight={printHeight}
+            printWidth={printWidth}
           />
 
           <RightPanel

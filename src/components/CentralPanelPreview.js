@@ -46,13 +46,14 @@ const CentralPanelPreview = ({
   setIsDrawerOpen,
   isDrawerOpen,
   printArea,
+  isElementOutOfBounds,
+  printHeight,
+  printWidth,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [fillColor, setFillColor] = useState("fill-[#000000]");
   // console.log(selectedColor.color, 'dcdsd');
-
-  
 
   useEffect(() => {
     setFillColor(`fill-[${selectedColor.color}]`);
@@ -366,9 +367,9 @@ const CentralPanelPreview = ({
             }`}
             style={{
               width: "100%",
-              maxWidth: device === "mobile" ? "200px" : "400px",
+              maxWidth: device === "mobile" ? "240px" : "400px",
               height: "calc(100vw * 1.25)", // 5:4 aspect ratio
-              maxHeight: device === "mobile" ? "250px" : "500px",
+              maxHeight: device === "mobile" ? "300px" : "500px",
               backgroundImage: `url(${selectedColor.previewImages[viewSide]})`,
               backgroundSize: "cover",
               backgroundRepeat: "no-repeat",
@@ -401,8 +402,8 @@ const CentralPanelPreview = ({
               style={{
                 left: "27%",
                 top: viewSide == "back" ? "20%" : "25%",
-                width: device === "mobile" ? `90px` : `180px`,
-                height: device === "mobile" ? `135px` : `270px`,
+                width: `${printWidth}px`,
+                height: `${printHeight}px`,
                 border: "2px solid #ef4444",
                 borderRadius: "8px",
                 backgroundColor: "rgba(239, 68, 68, 0.05)",
@@ -415,7 +416,7 @@ const CentralPanelPreview = ({
               return (
                 <div key={element.id} className="relative">
                   <div className="absolute right-0">
-                    {element.opacity !== "isInside" && (
+                    {isElementOutOfBounds && (
                       <span
                         className="text-red-600 font-semibold text-sm 
                       animate-pulse transition-opacity duration-700 ease-in-out
@@ -428,14 +429,15 @@ const CentralPanelPreview = ({
 
                   {/* Main Element */}
                   <div
-                    className={`absolute cursor-move touch-none select-none transition-opacity ${
-                      element.opacity
-                    } ${selectedElement === element.id ? "z-10" : "z-0"} ${
-                      element.opacity === "isOutsidePrintArea "
-                        ? "opacity-30"
-                        : element.opacity === "isPartiallyOutside"
-                        ? "opacity-60"
-                        : "opacity-100"
+                    className={`absolute cursor-move touch-none select-none transition-opacity 
+                    ${selectedElement === element.id ? "z-10" : "z-0"} ${
+                      isElementOutOfBounds &&
+                      //  "isOutsidePrintArea "
+                      // ?
+                      "opacity-30"
+                      // : element.opacity === "isPartiallyOutside"
+                      // ? "opacity-60"
+                      // : "opacity-100"
                     }`}
                     style={{
                       left: element.x,
@@ -445,10 +447,10 @@ const CentralPanelPreview = ({
                       transform: `rotate(${element.style?.rotation || 0}deg)`,
                       transformOrigin: "center center",
                       // Add visual indicator for elements outside print area
-                      filter:
-                        element.opacity === "isOutsidePrintArea "
-                          ? "grayscale(50%)"
-                          : "none",
+                      // filter:
+                      //   element.opacity === "isOutsidePrintArea "
+                      //     ? "grayscale(50%)"
+                      //     : "none",
                     }}
                     onClick={(e) => handleElementClick(element, e)}
                     onMouseDown={(e) => handleElementStart(e, element)}
@@ -457,47 +459,47 @@ const CentralPanelPreview = ({
                     {/* Print area clipping mask */}
                     <div
                       className="absolute inset-0 overflow-hidden"
-                      style={{
-                        clipPath:
-                          element.opacity === "isPartiallyOutside"
-                            ? `polygon(
-                  ${Math.max(
-                    0,
-                    ((printArea.left - element.x) / element.width) * 100
-                  )}% ${Math.max(
-                                0,
-                                ((printArea.top - element.y) / element.height) *
-                                  100
-                              )}%,
-                  ${Math.min(
-                    100,
-                    ((printArea.right - element.x) / element.width) * 100
-                  )}% ${Math.max(
-                                0,
-                                ((printArea.top - element.y) / element.height) *
-                                  100
-                              )}%,
-                  ${Math.min(
-                    100,
-                    ((printArea.right - element.x) / element.width) * 100
-                  )}% ${Math.min(
-                                100,
-                                ((printArea.bottom - element.y) /
-                                  element.height) *
-                                  100
-                              )}%,
-                  ${Math.max(
-                    0,
-                    ((printArea.left - element.x) / element.width) * 100
-                  )}% ${Math.min(
-                                100,
-                                ((printArea.bottom - element.y) /
-                                  element.height) *
-                                  100
-                              )}%
-                )`
-                            : "none",
-                      }}
+                      //       style={{
+                      //         clipPath:
+                      //           element.opacity === "isPartiallyOutside"
+                      //             ? `polygon(
+                      //   ${Math.max(
+                      //     0,
+                      //     ((printArea.left - element.x) / element.width) * 100
+                      //   )}% ${Math.max(
+                      //                 0,
+                      //                 ((printArea.top - element.y) / element.height) *
+                      //                   100
+                      //               )}%,
+                      //   ${Math.min(
+                      //     100,
+                      //     ((printArea.right - element.x) / element.width) * 100
+                      //   )}% ${Math.max(
+                      //                 0,
+                      //                 ((printArea.top - element.y) / element.height) *
+                      //                   100
+                      //               )}%,
+                      //   ${Math.min(
+                      //     100,
+                      //     ((printArea.right - element.x) / element.width) * 100
+                      //   )}% ${Math.min(
+                      //                 100,
+                      //                 ((printArea.bottom - element.y) /
+                      //                   element.height) *
+                      //                   100
+                      //               )}%,
+                      //   ${Math.max(
+                      //     0,
+                      //     ((printArea.left - element.x) / element.width) * 100
+                      //   )}% ${Math.min(
+                      //                 100,
+                      //                 ((printArea.bottom - element.y) /
+                      //                   element.height) *
+                      //                   100
+                      //               )}%
+                      // )`
+                      //             : "none",
+                      //       }}
                     >
                       {element.type === "text" ? (
                         <div
@@ -546,8 +548,7 @@ const CentralPanelPreview = ({
                       {/* Selection Border - Red if outside print area */}
                       <div
                         className={`absolute inset-0 border-2 border-dashed rounded opacity-80 ${
-                          element.opacity === "isOutsidePrintArea " ||
-                          element.opacity === "isPartiallyOutside"
+                          isElementOutOfBounds
                             ? "border-red-500"
                             : "border-blue-400"
                         }`}
@@ -577,7 +578,7 @@ const CentralPanelPreview = ({
                         onTouchStart={(e) => handleResizeStart(e, element)}
                         title="Resize"
                       >
-                        <IoIosResize className="text-lg rotate-90 text-white font-semibold"/>
+                        <IoIosResize className="text-lg rotate-90 text-white font-semibold" />
                       </div>
 
                       {/* Rotation Handle */}
