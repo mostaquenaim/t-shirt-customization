@@ -132,7 +132,7 @@ const CustomizeYourTee = () => {
   // set print width and height
   useEffect(() => {
     if (device === "mobile") {
-      setPrintWidth(100);
+      setPrintWidth(105);
       setPrintHeight(162);
     } else {
       setPrintWidth(180);
@@ -243,8 +243,6 @@ const CustomizeYourTee = () => {
       printHeight,
       Math.ceil(ctx.measureText(text || " ").width)
     )
-
-    // console.log(textWidth, "textWidth");
 
     // Line height
     const lineHeight =
