@@ -224,7 +224,7 @@ const CustomizeYourTee = () => {
     setPrintArea(area);
   }, [canvasRef, viewSide, device]);
 
-  // helper: compute width/height from text + font
+  // compute width/height from text + font
   const computeTextBox = (text, style, device, canvasRef) => {
     const baseFontSize = device === "mobile" ? 14 : 24;
     const fontSize = style.fontSize || baseFontSize;
@@ -240,11 +240,11 @@ const CustomizeYourTee = () => {
 
     // measure text width safely
     const textWidth = Math.min(
-      printWidth,
+      printHeight,
       Math.ceil(ctx.measureText(text || " ").width)
-    );
+    )
 
-    console.log(textWidth, "textWidth");
+    // console.log(textWidth, "textWidth");
 
     // Line height
     const lineHeight =
