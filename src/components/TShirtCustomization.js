@@ -636,12 +636,17 @@ const CustomizeYourTee = () => {
       [viewSide]: [...prev[viewSide], newElement],
     }));
     setSelectedElement(newElement.id);
-
-    setTimeout(() => {
-      const input = inputRefs.current[newElement.id];
-      if (input) input.focus();
-    }, 0);
   };
+
+  useEffect(() => {
+    setTimeout(() => {
+      const input = inputRefs.current[selectedElement];
+      if (input) {
+        input.click();
+        input.focus();
+      }
+    }, 0);
+  }, [selectedElement]);
 
   // element operations
   // element operations
