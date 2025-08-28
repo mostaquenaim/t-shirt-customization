@@ -642,10 +642,10 @@ const CustomizeYourTee = () => {
     setTimeout(() => {
       const input = inputRefs.current[selectedElement];
       if (input) {
-        input.click();
-        input.focus();
+        input.click(); // Simulate click
+        input.focus(); // Then focus the input
       }
-    }, 0);
+    }, 300); // Delay in milliseconds
   }, [selectedElement]);
 
   // element operations

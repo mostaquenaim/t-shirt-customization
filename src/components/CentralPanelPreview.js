@@ -63,13 +63,6 @@ const CentralPanelPreview = ({
     setFillColor(`fill-[${selectedColor.color}]`);
   }, [selectedColor]);
 
-  useEffect(() => {
-     setTimeout(() => {
-      const input = inputRefs.current[selectedElement];
-      if (input) input.focus();
-    }, 0);
-  }, [selectedElement]);
-
   // const fillColor = `fill-[${selectedColor.color}]`
 
   // console.log(selectedElement);
