@@ -129,6 +129,8 @@ const CustomizeYourTee = () => {
     back: null,
   });
 
+  const inputRefs = useRef({});
+
   // set print width and height
   useEffect(() => {
     if (device === "mobile") {
@@ -242,7 +244,7 @@ const CustomizeYourTee = () => {
     const textWidth = Math.min(
       printHeight,
       Math.ceil(ctx.measureText(text || " ").width)
-    )
+    );
 
     // Line height
     const lineHeight =
@@ -423,9 +425,7 @@ const CustomizeYourTee = () => {
           //   ? "isPartiallyOutside"
           //   : "isInside",
         });
-      } 
-      
-      else if (element && element.type === "text") {
+      } else if (element && element.type === "text") {
         // Avoid parseInt on floats; use Math.round for pixel ints
         const nextWidth = Math.max(20, Math.round(newWidth));
         const nextHeight = Math.max(5, Math.round(newHeight));
@@ -636,6 +636,11 @@ const CustomizeYourTee = () => {
       [viewSide]: [...prev[viewSide], newElement],
     }));
     setSelectedElement(newElement.id);
+
+    setTimeout(() => {
+      const input = inputRefs.current[newElement.id];
+      if (input) input.focus();
+    }, 0);
   };
 
   // element operations
@@ -1019,6 +1024,8 @@ const CustomizeYourTee = () => {
             isElementOutOfBounds={isElementOutOfBounds}
             printHeight={printHeight}
             printWidth={printWidth}
+            //ref
+            inputRefs={inputRefs}
           />
 
           <RightPanel

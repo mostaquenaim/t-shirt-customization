@@ -49,15 +49,26 @@ const CentralPanelPreview = ({
   isElementOutOfBounds,
   printHeight,
   printWidth,
+  //refs
+  inputRefs,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [fillColor, setFillColor] = useState("fill-[#000000]");
   // console.log(selectedColor.color, 'dcdsd');
 
+  const [textFieldBlink, setTextFieldBlink] = useState(false);
+
   useEffect(() => {
     setFillColor(`fill-[${selectedColor.color}]`);
   }, [selectedColor]);
+
+  useEffect(() => {
+     setTimeout(() => {
+      const input = inputRefs.current[selectedElement];
+      if (input) input.focus();
+    }, 0);
+  }, [selectedElement]);
 
   // const fillColor = `fill-[${selectedColor.color}]`
 
@@ -303,19 +314,25 @@ const CentralPanelPreview = ({
                     </div>
 
                     {/* Text Content */}
-                    <div className="flex-shrink-0 flex items-center gap-2 md:gap-3 bg-gray-50 rounded-lg px-3 py-2 shadow-sm border border-gray-200 flex-1 min-w-[180px]">
+                    <div
+                      className={`${
+                        textFieldBlink && "border-blue-500 border-2"
+                      } flex-shrink-0 flex items-center gap-2 md:gap-3 bg-gray-50 rounded-lg px-3 py-2 shadow-sm border border-gray-200 flex-1 min-w-[180px]`}
+                    >
                       <label className="text-xs font-medium text-gray-600 whitespace-nowrap hidden xs:block">
                         Content
                       </label>
                       <input
                         type="text"
+                        ref={(el) => (inputRefs.current[item.id] = el)} // assign ref per element
                         value={item.content}
                         onChange={(e) =>
                           updateElement(item.id, {
                             content: e.target.value,
                           })
                         }
-                        className="flex-1 min-w-0 text-sm bg-white border border-gray-300 rounded-md py-1.5 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        className=
+                        {`${textFieldBlink && 'border-3 border-red-700'} flex-1 min-w-0 text-sm bg-white border border-gray-300 rounded-md py-1.5 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
                         placeholder="Enter text content..."
                       />
                     </div>
@@ -431,13 +448,7 @@ const CentralPanelPreview = ({
                   <div
                     className={`absolute cursor-move touch-none select-none transition-opacity 
                     ${selectedElement === element.id ? "z-10" : "z-0"} ${
-                      isElementOutOfBounds &&
-                      //  "isOutsidePrintArea "
-                      // ?
-                      "opacity-30"
-                      // : element.opacity === "isPartiallyOutside"
-                      // ? "opacity-60"
-                      // : "opacity-100"
+                      isElementOutOfBounds && "opacity-30"
                     }`}
                     style={{
                       left: element.x,
@@ -446,61 +457,13 @@ const CentralPanelPreview = ({
                       height: element.height,
                       transform: `rotate(${element.style?.rotation || 0}deg)`,
                       transformOrigin: "center center",
-                      // Add visual indicator for elements outside print area
-                      // filter:
-                      //   element.opacity === "isOutsidePrintArea "
-                      //     ? "grayscale(50%)"
-                      //     : "none",
                     }}
                     onClick={(e) => handleElementClick(element, e)}
                     onMouseDown={(e) => handleElementStart(e, element)}
                     onTouchStart={(e) => handleElementStart(e, element)}
                   >
                     {/* Print area clipping mask */}
-                    <div
-                      className="absolute inset-0 overflow-hidden"
-                      //       style={{
-                      //         clipPath:
-                      //           element.opacity === "isPartiallyOutside"
-                      //             ? `polygon(
-                      //   ${Math.max(
-                      //     0,
-                      //     ((printArea.left - element.x) / element.width) * 100
-                      //   )}% ${Math.max(
-                      //                 0,
-                      //                 ((printArea.top - element.y) / element.height) *
-                      //                   100
-                      //               )}%,
-                      //   ${Math.min(
-                      //     100,
-                      //     ((printArea.right - element.x) / element.width) * 100
-                      //   )}% ${Math.max(
-                      //                 0,
-                      //                 ((printArea.top - element.y) / element.height) *
-                      //                   100
-                      //               )}%,
-                      //   ${Math.min(
-                      //     100,
-                      //     ((printArea.right - element.x) / element.width) * 100
-                      //   )}% ${Math.min(
-                      //                 100,
-                      //                 ((printArea.bottom - element.y) /
-                      //                   element.height) *
-                      //                   100
-                      //               )}%,
-                      //   ${Math.max(
-                      //     0,
-                      //     ((printArea.left - element.x) / element.width) * 100
-                      //   )}% ${Math.min(
-                      //                 100,
-                      //                 ((printArea.bottom - element.y) /
-                      //                   element.height) *
-                      //                   100
-                      //               )}%
-                      // )`
-                      //             : "none",
-                      //       }}
-                    >
+                    <div className="absolute inset-0 overflow-hidden">
                       {element.type === "text" ? (
                         <div
                           style={{
