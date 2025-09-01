@@ -394,7 +394,7 @@ const CentralPanelPreview = ({
               backgroundSize: "cover",
               backgroundRepeat: "no-repeat",
               backgroundPosition: "center",
-              touchAction: "none", // Prevent scrolling/zooming
+              // touchAction: "none", // Prevent scrolling/zooming
             }}
             onClick={handleCanvasClick}
             onTouchMove={(e) => handleMove(e, selectedElement)}
@@ -536,20 +536,13 @@ const CentralPanelPreview = ({
                       ></div>
 
                       {/* Resize Handle */}
-                      {/* <div
-                        className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full shadow-md cursor-se-resize pointer-events-auto transition-colors hover:scale-110"
+
+                      <IoIosResize
+                        className="text-lg rotate-90 text-white font-semibold absolute -bottom-4 -right-4 w-5 h-5 rounded-full shadow-md cursor-se-resize pointer-events-auto transition-colors hover:scale-110"
                         onMouseDown={(e) => handleResizeStart(e, element)}
                         onTouchStart={(e) => handleResizeStart(e, element)}
                         title="Resize"
-                      > */}
-                        <IoIosResize
-                          className="text-lg rotate-90 text-white font-semibold absolute -bottom-4 -right-4 w-5 h-5 rounded-full shadow-md cursor-se-resize pointer-events-auto transition-colors hover:scale-110"
-                          onMouseDown={(e) => handleResizeStart(e, element)}
-                          onTouchStart={(e) => handleResizeStart(e, element)}
-                          title="Resize"
-                        />
-
-                      {/* </div> */}
+                      />
 
                       {/* Rotation Handle */}
                       <div
