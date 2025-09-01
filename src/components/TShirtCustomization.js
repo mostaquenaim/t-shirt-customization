@@ -423,8 +423,8 @@ const CustomizeYourTee = () => {
         });
       } else if (element && element.type === "text") {
         // Avoid parseInt on floats; use Math.round for pixel ints
-        const nextWidth = newWidth
-        const nextHeight = newHeight
+        const nextWidth = newWidth;
+        const nextHeight = newHeight;
 
         // console.log(initialSize);
         // Use uniform scale to prevent distortion (use the larger axis)
@@ -872,7 +872,24 @@ const CustomizeYourTee = () => {
             element.x + element.width / 2,
             element.y + element.height / 2
           );
-          ctx.rotate((element.style.rotation * Math.PI) / 180);
+          // ctx.rotate((element.style.rotation * Math.PI) / 180);
+
+          ctx.rotate(
+            parseInt((element?.style?.rotation + 365) / 90) >
+              parseInt((element?.style?.rotation + 360) / 90)
+              ? (90 *
+                  parseInt((element.style?.rotation + 365) / 90) *
+                  Math.PI) /
+                  180
+              : parseInt((element?.style?.rotation + 445) / 90) ===
+                parseInt((element?.style?.rotation + 360) / 90)
+              ? (90 *
+                  parseInt((element.style?.rotation - 365) / 90) *
+                  Math.PI) /
+                180
+              : ((element.style?.rotation || 0) * Math.PI) / 180
+          );
+
           ctx.translate(
             -element.x - element.width / 2,
             -element.y - element.height / 2

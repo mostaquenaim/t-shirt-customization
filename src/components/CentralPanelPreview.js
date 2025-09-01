@@ -134,27 +134,12 @@ const CentralPanelPreview = ({
     handleMove(e, elementId);
   };
 
-  // --- rotation helpers ---
-  const normalizeDeg = (deg) => ((deg % 360) + 360) % 360; // 0..359
+  const res = elements[viewSide].find((item) => item.id === selectedElement);
 
-  const nearest90 = (deg) => Math.round(deg / 90) * 90;
+  const rotation = res?.style?.rotation || 0;
 
-  /** Return a CSS rotate() using a snapped angle when within tol degrees of 0/90/180/270 */
-  function getRotationStyleFrom(element, tol = 5) {
-    const raw = parseFloat(element?.style?.rotation ?? 0);
-    const norm = normalizeDeg(raw);
-    const snap = nearest90(norm);
-
-    // distance to the nearest multiple of 90, accounting for wrap-around
-    const diff = Math.min(
-      Math.abs(norm - snap),
-      Math.abs(norm - (snap + 360)),
-      Math.abs(norm - (snap - 360))
-    );
-
-    const finalDeg = diff <= tol ? snap : norm;
-    return `rotate(${finalDeg}deg)`;
-  }
+  // snap rotation to nearest 90
+  const snappedRotation = Math.round(rotation / 90) * 90;
 
   // const handleDoubleClick = () => {
   //   setIsEditing({
@@ -598,37 +583,20 @@ const CentralPanelPreview = ({
                       width: element.width,
                       height: element.height,
                       transform:
-                        // element?.style?.rotation == 0 ||
-                        // element?.style?.rotation == 90 ||
-                        // element?.style?.rotation == 180 ||
-                        // element?.style?.rotation == -180 ||
-                        // element?.style?.rotation == -90
-                        //   ? `rotate(${element.style?.rotation || 0}deg)`
-                        //   : parseInt((element?.style?.rotation + 5) / 90) >
-                        //     parseInt(element?.style?.rotation / 90)
-                        //   ? `rotate(${
-                        //       90 * parseInt((element.style?.rotation + 5) / 90)
-                        //     }deg)`
-                        //   : 0 < element?.style?.rotation % 90 &&
-                        //     element?.style?.rotation % 90 < 5
-                        //   ? `rotate(${
-                        //       90 * parseInt(element.style?.rotation / 90)
-                        //     }deg)`
-                        //   :
+                        parseInt((element?.style?.rotation + 365) / 90) >
+                        parseInt((element?.style?.rotation + 360) / 90)
+                          ? `rotate(${
+                              90 *
+                              parseInt((element.style?.rotation + 365) / 90)
+                            }deg)`
+                          : parseInt((element?.style?.rotation + 445) / 90) ===
+                            parseInt((element?.style?.rotation + 360) / 90)
+                          ? `rotate(${
+                              90 *
+                              parseInt((element.style?.rotation - 365) / 90)
+                            }deg)`
+                          : `rotate(${element.style?.rotation || 0}deg)`,
 
-                        `rotate(${element.style?.rotation || 0}deg)`,
-
-                      // element.style?.rotation == 91 ||
-                      // element.style?.rotation == 1 ||
-                      // element.style?.rotation == -179 ||
-                      // element.style?.rotation == -89
-                      //   ? `rotate(${element.style?.rotation - 1}deg)`
-                      //   : element.style?.rotation == 89 ||
-                      //     element.style?.rotation == 179 ||
-                      //     element.style?.rotation == -1 ||
-                      //     element.style?.rotation == -91
-                      //   ? `rotate(${element.style?.rotation + 1}deg)`
-                      //   : `rotate(${element.style?.rotation || 0}deg)`,
                       transformOrigin: "center center",
                     }}
                     onClick={(e) => handleElementClick(element, e)}
@@ -691,7 +659,22 @@ const CentralPanelPreview = ({
                         top: element.y - 4,
                         width: element.width + 8,
                         height: element.height + 8,
-                        transform: `rotate(${element.style?.rotation || 0}deg)`,
+                        transform:
+                          parseInt((element?.style?.rotation + 365) / 90) >
+                          parseInt((element?.style?.rotation + 360) / 90)
+                            ? `rotate(${
+                                90 *
+                                parseInt((element.style?.rotation + 365) / 90)
+                              }deg)`
+                            : parseInt(
+                                (element?.style?.rotation + 445) / 90
+                              ) ===
+                              parseInt((element?.style?.rotation + 360) / 90)
+                            ? `rotate(${
+                                90 *
+                                parseInt((element.style?.rotation - 365) / 90)
+                              }deg)`
+                            : `rotate(${element.style?.rotation || 0}deg)`,
                         transformOrigin: `${(element.width + 8) / 2}px ${
                           (element.height + 8) / 2
                         }px`,
