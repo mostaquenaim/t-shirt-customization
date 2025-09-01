@@ -394,7 +394,7 @@ const CentralPanelPreview = ({
               backgroundSize: "cover",
               backgroundRepeat: "no-repeat",
               backgroundPosition: "center",
-              // touchAction: "none", // Prevent scrolling/zooming
+              touchAction: selectedElement ? 'none' : 'auto'
             }}
             onClick={handleCanvasClick}
             onTouchMove={(e) => handleMove(e, selectedElement)}
