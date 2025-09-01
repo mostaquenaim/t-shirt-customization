@@ -77,7 +77,7 @@ const CentralPanelPreview = ({
     elementHeight
   ) => {
     const snapAngles = [0, 90, 180, -90, -180];
-    const snapTolerance = 1; // degrees
+    const snapTolerance = 5; // degrees
     const lines = [];
 
     snapAngles.forEach((angle) => {
@@ -140,6 +140,15 @@ const CentralPanelPreview = ({
 
   // snap rotation to nearest 90
   const snappedRotation = Math.round(rotation / 90) * 90;
+
+  const [showRotateInfo, setShowRotateInfo] = useState(false);
+
+  const handleRotateInfo = () => {
+    setShowRotateInfo(true);
+    setTimeout(() => {
+      setShowRotateInfo(false);
+    }, 2000);
+  };
 
   // const handleDoubleClick = () => {
   //   setIsEditing({
@@ -204,7 +213,7 @@ const CentralPanelPreview = ({
 
             {/* Dropdown list of colors */}
             {expanded && (
-              <div className="absolute mt-2 flex flex-col gap-2 z-10 bg-white rounded-lg shadow-lg border w-full max-w-[200px">
+              <div className="absolute mt-2 flex flex-col gap-2 z-10 bg-white rounded-lg shadow-lg border ">
                 {tshirtColors.map((colorOption) => (
                   <button
                     key={colorOption.color}
@@ -237,7 +246,7 @@ const CentralPanelPreview = ({
             } w-full md:w-auto`}
             aria-label="Add text element"
           >
-            <span>Add Text</span>
+            <span>+ Add Text</span>
           </button>
 
           {/* add image */}
@@ -254,7 +263,7 @@ const CentralPanelPreview = ({
               className="hidden"
               aria-label="Image upload"
             />
-            Add Image
+            + Add Image
           </button>
         </div>
 
@@ -559,6 +568,7 @@ const CentralPanelPreview = ({
             {elements[viewSide].map((element) => {
               return (
                 <div key={element.id} className="relative">
+                  {/* out of print range warning  */}
                   <div className="absolute right-0">
                     {isElementOutOfBounds && (
                       <span
@@ -567,6 +577,19 @@ const CentralPanelPreview = ({
                       px-2 py-1 bg-red-100 border border-red-400 rounded-md shadow-sm"
                       >
                         ⚠ Out of print range
+                      </span>
+                    )}
+                  </div>
+
+                  {/* rotation info warning  */}
+                  <div className="absolute left-0">
+                    {showRotateInfo && (
+                      <span
+                        className="text-yellow-600 font-semibold text-sm 
+                      animate-pulse transition-opacity duration-500 ease-in-out
+                      px-2 py-1 bg-red-100 border border-red-400 rounded-md shadow-sm"
+                      >
+                        ⚠ Hold the rotate icon and rotate
                       </span>
                     )}
                   </div>
@@ -705,7 +728,11 @@ const CentralPanelPreview = ({
                         onTouchStart={(e) => handleRotateStart(e, element)}
                         title="Rotate"
                       >
-                        <RotateCw size={12} className="text-white" />
+                        <RotateCw
+                          onClick={handleRotateInfo}
+                          size={12}
+                          className="text-white"
+                        />
                       </div>
 
                       {/* Delete Handle */}
