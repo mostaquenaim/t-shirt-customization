@@ -108,6 +108,7 @@ const CustomizeYourTee = () => {
   const [printWidth, setPrintWidth] = useState(180);
   const [printHeight, setPrintHeight] = useState(270);
   const [isElementOutOfBounds, setIsElementOutOfBounds] = useState(false);
+  const [isDoubleClicked, setIsDoubleClicked] = useState(false);
   const [textStyle, setTextStyle] = useState({
     fontSize: 24,
     color: "#000000",
@@ -419,16 +420,11 @@ const CustomizeYourTee = () => {
         updateElement(selectedElement, {
           width: newWidth,
           height: newHeight,
-          // opacity: isOutsidePrintArea
-          //   ? "isOutsidePrintArea"
-          //   : isPartiallyOutside
-          //   ? "isPartiallyOutside"
-          //   : "isInside",
         });
       } else if (element && element.type === "text") {
         // Avoid parseInt on floats; use Math.round for pixel ints
-        const nextWidth = Math.max(20, Math.round(newWidth));
-        const nextHeight = Math.max(5, Math.round(newHeight));
+        const nextWidth = newWidth
+        const nextHeight = newHeight
 
         // console.log(initialSize);
         // Use uniform scale to prevent distortion (use the larger axis)
@@ -454,11 +450,6 @@ const CustomizeYourTee = () => {
         updateElement(selectedElement, {
           width: nextWidth,
           height: adjustedHeight,
-          // opacity: isOutsidePrintArea
-          //   ? "isOutsidePrintArea"
-          //   : isPartiallyOutside
-          //   ? "isPartiallyOutside"
-          //   : "isInside",
           style: {
             ...style,
             fontSize: newFontSize,
@@ -637,25 +628,29 @@ const CustomizeYourTee = () => {
     }));
     setSelectedElement(newElement.id);
 
-    // setTimeout(() => {
-    //   const input = inputRefs.current[selectedElement];
-    //   if (input) {
-    //     input.click(); // Simulate click
-    //     input.focus(); // Then focus the input
-    //   }
-    // }, 0); // Delay in milliseconds
-  };
-
-  useEffect(() => {
     setTimeout(() => {
-      const input = inputRefs.current[selectedElement];
+      const input = inputRefs.current[newElement.id];
       if (input) {
-        // input.blink()
         input.click(); // Simulate click
         input.focus(); // Then focus the input
       }
-    }, 300); // Delay in milliseconds
-  }, [selectedElement]);
+    }, 200); // Delay in milliseconds
+  };
+
+  useEffect(() => {
+    if (isDoubleClicked) {
+      setTimeout(() => {
+        const input = inputRefs.current[selectedElement];
+        if (input) {
+          // input.blink()
+          input.click(); // Simulate click
+          input.focus(); // Then focus the input
+        }
+      }, 300); // Delay in milliseconds
+
+      setIsDoubleClicked(false);
+    }
+  }, [isDoubleClicked]);
 
   // element operations
   // element operations
@@ -1040,6 +1035,7 @@ const CustomizeYourTee = () => {
             printWidth={printWidth}
             //ref
             inputRefs={inputRefs}
+            setIsDoubleClicked={setIsDoubleClicked}
           />
 
           <RightPanel

@@ -51,6 +51,7 @@ const CentralPanelPreview = ({
   printWidth,
   //refs
   inputRefs,
+  setIsDoubleClicked,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -61,10 +62,99 @@ const CentralPanelPreview = ({
   // const [isEditing, setIsEditing] = useState({
   //   id: 0,
   // });
+  const [rotationSnapLines, setRotationSnapLines] = useState([]);
 
   useEffect(() => {
     setFillColor(`fill-[${selectedColor.color}]`);
   }, [selectedColor]);
+
+  // Function to check if rotation is near snap angles and show lines
+  const updateRotationSnapLines = (
+    rotation,
+    elementX,
+    elementY,
+    elementWidth,
+    elementHeight
+  ) => {
+    const snapAngles = [0, 90, 180, -90, -180];
+    const snapTolerance = 1; // degrees
+    const lines = [];
+
+    snapAngles.forEach((angle) => {
+      const normalizedRotation = ((rotation % 360) + 360) % 360;
+      const distance = Math.min(
+        Math.abs(normalizedRotation - angle),
+        Math.abs(normalizedRotation - (angle + 360)),
+        Math.abs(normalizedRotation - (angle - 360))
+      );
+
+      if (distance <= snapTolerance) {
+        const centerX = elementX + elementWidth / 2;
+        const centerY = elementY + elementHeight / 2;
+
+        // Create snap lines based on the angle
+        if (angle === 0 || angle === 180 || angle === -180) {
+          // Horizontal line
+          lines.push({
+            type: "horizontal",
+            y: centerY,
+            angle: angle,
+          });
+        }
+        if (angle === 90 || angle === -90) {
+          // Vertical line
+          lines.push({
+            type: "vertical",
+            x: centerX,
+            angle: angle,
+          });
+        }
+      }
+    });
+
+    setRotationSnapLines(lines);
+  };
+
+  // Enhanced handleMove to update snap lines during rotation
+  const enhancedHandleMove = (e, elementId) => {
+    if (isRotating && selectedElement) {
+      const selectedEl = elements[viewSide].find(
+        (el) => el.id === selectedElement
+      );
+      if (selectedEl) {
+        updateRotationSnapLines(
+          selectedEl.style?.rotation || 0,
+          selectedEl.x,
+          selectedEl.y,
+          selectedEl.width,
+          selectedEl.height
+        );
+      }
+    }
+    handleMove(e, elementId);
+  };
+
+  // --- rotation helpers ---
+  const normalizeDeg = (deg) => ((deg % 360) + 360) % 360; // 0..359
+
+  const nearest90 = (deg) => Math.round(deg / 90) * 90;
+
+  /** Return a CSS rotate() using a snapped angle when within tol degrees of 0/90/180/270 */
+  function getRotationStyleFrom(element, tol = 5) {
+    const raw = parseFloat(element?.style?.rotation ?? 0);
+    const norm = normalizeDeg(raw);
+    const snap = nearest90(norm);
+
+    // distance to the nearest multiple of 90, accounting for wrap-around
+    const diff = Math.min(
+      Math.abs(norm - snap),
+      Math.abs(norm - (snap + 360)),
+      Math.abs(norm - (snap - 360))
+    );
+
+    const finalDeg = diff <= tol ? snap : norm;
+    return `rotate(${finalDeg}deg)`;
+  }
 
   // const handleDoubleClick = () => {
   //   setIsEditing({
@@ -394,13 +484,13 @@ const CentralPanelPreview = ({
               backgroundSize: "cover",
               backgroundRepeat: "no-repeat",
               backgroundPosition: "center",
-              touchAction: selectedElement ? 'none' : 'auto'
+              touchAction: selectedElement ? "none" : "auto",
             }}
             onClick={handleCanvasClick}
-            onTouchMove={(e) => handleMove(e, selectedElement)}
+            onTouchMove={(e) => enhancedHandleMove(e, selectedElement)}
             onTouchEnd={handleEnd}
             onTouchCancel={handleEnd}
-            onMouseMove={(e) => handleMove(e, selectedElement)}
+            onMouseMove={(e) => enhancedHandleMove(e, selectedElement)}
             onMouseUp={handleEnd}
             onMouseLeave={handleEnd}
           >
@@ -430,6 +520,56 @@ const CentralPanelPreview = ({
               }}
             ></div>
 
+            {/* Rotation Snap Lines */}
+            {selectedElement &&
+              rotationSnapLines.map((line, index) => (
+                <div
+                  key={index}
+                  className="absolute pointer-events-none z-30"
+                  style={{
+                    ...(line.type === "horizontal"
+                      ? {
+                          left: "0",
+                          right: "0",
+                          top: `${line.y}px`,
+                          height: "2px",
+                          background:
+                            "linear-gradient(90deg, transparent 0%, #3b82f6 20%, #3b82f6 80%, transparent 100%)",
+                        }
+                      : {
+                          top: "0",
+                          bottom: "0",
+                          left: `${line.x}px`,
+                          width: "2px",
+                          background:
+                            "linear-gradient(180deg, transparent 0%, #3b82f6 20%, #3b82f6 80%, transparent 100%)",
+                        }),
+                    boxShadow: "0 0 4px rgba(59, 130, 246, 0.5)",
+                    animation: "pulse 1s ease-in-out infinite alternate",
+                  }}
+                >
+                  {/* Angle indicator */}
+                  <div
+                    className="absolute bg-blue-500 text-white text-xs px-2 py-1 rounded-md font-medium shadow-lg"
+                    style={{
+                      ...(line.type === "horizontal"
+                        ? {
+                            top: "-30px",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                          }
+                        : {
+                            left: "-45px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                          }),
+                    }}
+                  >
+                    {line.angle}°
+                  </div>
+                </div>
+              ))}
+
             {/* Design Elements with Clipping */}
             {elements[viewSide].map((element) => {
               return (
@@ -457,12 +597,44 @@ const CentralPanelPreview = ({
                       top: element.y,
                       width: element.width,
                       height: element.height,
-                      transform: `rotate(${element.style?.rotation || 0}deg)`,
+                      transform:
+                        // element?.style?.rotation == 0 ||
+                        // element?.style?.rotation == 90 ||
+                        // element?.style?.rotation == 180 ||
+                        // element?.style?.rotation == -180 ||
+                        // element?.style?.rotation == -90
+                        //   ? `rotate(${element.style?.rotation || 0}deg)`
+                        //   : parseInt((element?.style?.rotation + 5) / 90) >
+                        //     parseInt(element?.style?.rotation / 90)
+                        //   ? `rotate(${
+                        //       90 * parseInt((element.style?.rotation + 5) / 90)
+                        //     }deg)`
+                        //   : 0 < element?.style?.rotation % 90 &&
+                        //     element?.style?.rotation % 90 < 5
+                        //   ? `rotate(${
+                        //       90 * parseInt(element.style?.rotation / 90)
+                        //     }deg)`
+                        //   :
+
+                        `rotate(${element.style?.rotation || 0}deg)`,
+
+                      // element.style?.rotation == 91 ||
+                      // element.style?.rotation == 1 ||
+                      // element.style?.rotation == -179 ||
+                      // element.style?.rotation == -89
+                      //   ? `rotate(${element.style?.rotation - 1}deg)`
+                      //   : element.style?.rotation == 89 ||
+                      //     element.style?.rotation == 179 ||
+                      //     element.style?.rotation == -1 ||
+                      //     element.style?.rotation == -91
+                      //   ? `rotate(${element.style?.rotation + 1}deg)`
+                      //   : `rotate(${element.style?.rotation || 0}deg)`,
                       transformOrigin: "center center",
                     }}
                     onClick={(e) => handleElementClick(element, e)}
                     onMouseDown={(e) => handleElementStart(e, element)}
                     onTouchStart={(e) => handleElementStart(e, element)}
+                    onDoubleClick={() => setIsDoubleClicked(true)}
                   >
                     {/* Print area clipping mask */}
                     <div className="absolute inset-0 overflow-hidden">
