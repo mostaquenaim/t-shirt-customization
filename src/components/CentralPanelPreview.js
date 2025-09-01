@@ -58,10 +58,19 @@ const CentralPanelPreview = ({
   // console.log(selectedColor.color, 'dcdsd');
 
   const [textFieldBlink, setTextFieldBlink] = useState(false);
+  // const [isEditing, setIsEditing] = useState({
+  //   id: 0,
+  // });
 
   useEffect(() => {
     setFillColor(`fill-[${selectedColor.color}]`);
   }, [selectedColor]);
+
+  // const handleDoubleClick = () => {
+  //   setIsEditing({
+  //     id: selectedElement,
+  //   });
+  // };
 
   // const fillColor = `fill-[${selectedColor.color}]`
 
@@ -324,8 +333,9 @@ const CentralPanelPreview = ({
                             content: e.target.value,
                           })
                         }
-                        className=
-                        {`${textFieldBlink && 'border-3 border-red-700'} flex-1 min-w-0 text-sm bg-white border border-gray-300 rounded-md py-1.5 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
+                        className={`${
+                          textFieldBlink && "border-3 border-red-700"
+                        } flex-1 min-w-0 text-sm bg-white border border-gray-300 rounded-md py-1.5 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
                         placeholder="Enter text content..."
                       />
                     </div>
@@ -459,6 +469,7 @@ const CentralPanelPreview = ({
                     <div className="absolute inset-0 overflow-hidden">
                       {element.type === "text" ? (
                         <div
+                          // onDoubleClick={handleDoubleClick}
                           style={{
                             fontSize: element.style.fontSize,
                             color: element.style.color,
@@ -473,7 +484,21 @@ const CentralPanelPreview = ({
                             alignItems: "center",
                           }}
                         >
+                          {/* {isEditing.id === element.id ? (
+                            <input
+                              type="text"
+                              value={element.content}
+                              onChange={(e) =>
+                                updateElement(element.id, {
+                                  content: e.target.value,
+                                })
+                              }
+                              className={`flex-1 min-w-0 text-sm border border-gray-300 rounded-md py-1.5 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
+                              placeholder="Enter text content..."
+                            />
+                          ) : ( */}
                           {element.content}
+                          {/* )} */}
                         </div>
                       ) : (
                         <img
@@ -510,32 +535,21 @@ const CentralPanelPreview = ({
                         }`}
                       ></div>
 
-                      {/* Corner Handles */}
-                      {/* <div
-                        className="absolute -top-1 -left-1 w-3 h-3 bg-blue-400 rounded-full border-2 border-white shadow-sm"
-                        onMouseDown={(e) => handleResizeStart(e, element)}
-                        onTouchStart={(e) => handleResizeStart(e, element)}
-                      ></div>
-                      <div
-                        className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full border-2 border-white shadow-sm"
-                        onMouseDown={(e) => handleResizeStart(e, element)}
-                        onTouchStart={(e) => handleResizeStart(e, element)}
-                      ></div>
-                      <div
-                        className="absolute -bottom-1 -left-1 w-3 h-3 bg-blue-400 rounded-full border-2 border-white shadow-sm cursor-se-resize pointer-events-auto hover:bg-blue-600 transition-colors hover:scale-110"
-                        onMouseDown={(e) => handleResizeStart(e, element)}
-                        onTouchStart={(e) => handleResizeStart(e, element)}
-                      ></div> */}
-
                       {/* Resize Handle */}
-                      <div
+                      {/* <div
                         className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full shadow-md cursor-se-resize pointer-events-auto transition-colors hover:scale-110"
                         onMouseDown={(e) => handleResizeStart(e, element)}
                         onTouchStart={(e) => handleResizeStart(e, element)}
                         title="Resize"
-                      >
-                        <IoIosResize className="text-lg rotate-90 text-white font-semibold" />
-                      </div>
+                      > */}
+                        <IoIosResize
+                          className="text-lg rotate-90 text-white font-semibold absolute -bottom-4 -right-4 w-5 h-5 rounded-full shadow-md cursor-se-resize pointer-events-auto transition-colors hover:scale-110"
+                          onMouseDown={(e) => handleResizeStart(e, element)}
+                          onTouchStart={(e) => handleResizeStart(e, element)}
+                          title="Resize"
+                        />
+
+                      {/* </div> */}
 
                       {/* Rotation Handle */}
                       <div
