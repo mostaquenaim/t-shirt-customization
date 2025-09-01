@@ -404,7 +404,6 @@ const CentralPanelPreview = ({
             onMouseUp={handleEnd}
             onMouseLeave={handleEnd}
           >
-            {/* <div className="absolute "></div> */}
             {/* T-shirt outline */}
             <div
               className="absolute inset-4 border border-dashed rounded-lg opacity-30 pointer-events-none"
@@ -538,7 +537,7 @@ const CentralPanelPreview = ({
                       {/* Resize Handle */}
 
                       <IoIosResize
-                        className="text-lg rotate-90 text-white font-semibold absolute -bottom-4 -right-4 w-5 h-5 rounded-full shadow-md cursor-se-resize pointer-events-auto transition-colors hover:scale-110"
+                        className="bg-black text-lg rotate-90 text-white font-semibold absolute -bottom-4 -right-4 w-5 h-5 rounded-full shadow-md cursor-se-resize pointer-events-auto transition-colors hover:scale-110"
                         onMouseDown={(e) => handleResizeStart(e, element)}
                         onTouchStart={(e) => handleResizeStart(e, element)}
                         title="Resize"
