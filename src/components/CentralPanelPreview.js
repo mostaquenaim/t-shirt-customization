@@ -237,7 +237,7 @@ const CentralPanelPreview = ({
             } w-full md:w-auto`}
             aria-label="Add text element"
           >
-            <span>+ Text</span>
+            <span>Add Text</span>
           </button>
 
           {/* add image */}
@@ -254,7 +254,7 @@ const CentralPanelPreview = ({
               className="hidden"
               aria-label="Image upload"
             />
-            + Image
+            Add Image
           </button>
         </div>
 
