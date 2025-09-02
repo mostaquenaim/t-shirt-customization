@@ -430,11 +430,10 @@ const CustomizeYourTee = () => {
         // Use uniform scale to prevent distortion (use the larger axis)
         const scaleX = nextWidth / Math.max(1, initialSize.width);
         const scaleY = nextHeight / Math.max(1, initialSize.height);
-        const scale = Math.max(scaleX, scaleY);
+        const scale = Math.min(scaleX, scaleY);
 
         const initialFS = Number(initialFontSize) || 14;
 
-        // console.log(initialFS * scale,'okk');
         // Clamp font size to sane bounds
         const newFontSize = Math.max(
           8,

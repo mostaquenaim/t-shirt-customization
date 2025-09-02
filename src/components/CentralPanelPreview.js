@@ -134,13 +134,6 @@ const CentralPanelPreview = ({
     handleMove(e, elementId);
   };
 
-  const res = elements[viewSide].find((item) => item.id === selectedElement);
-
-  const rotation = res?.style?.rotation || 0;
-
-  // snap rotation to nearest 90
-  const snappedRotation = Math.round(rotation / 90) * 90;
-
   const [showRotateInfo, setShowRotateInfo] = useState(false);
 
   const handleRotateInfo = () => {
@@ -149,16 +142,6 @@ const CentralPanelPreview = ({
       setShowRotateInfo(false);
     }, 2000);
   };
-
-  // const handleDoubleClick = () => {
-  //   setIsEditing({
-  //     id: selectedElement,
-  //   });
-  // };
-
-  // const fillColor = `fill-[${selectedColor.color}]`
-
-  // console.log(selectedElement);
 
   return (
     <div className="lg:col-span-6">
