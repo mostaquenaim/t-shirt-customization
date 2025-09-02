@@ -830,108 +830,113 @@ const CustomizeYourTee = () => {
     }
   };
 
-  const generatePreview = async (side) => {
-    const canvas = document.createElement("canvas");
-    canvas.width = device === "mobile" ? 240 : 400;
-    canvas.height = device === "mobile" ? 300 : 500;
-    const ctx = canvas.getContext("2d");
+  // Add an optional exportScale to get sharper exports (e.g., 2 or 3)
+const generatePreview = async (side, exportScale = 1) => {
+  // CSS pixel size (your intented display size)
+  const cssWidth  = device === "mobile" ? 240 : 400;
+  const cssHeight = device === "mobile" ? 300 : 500;
 
-    try {
-      const bgImg = new Image();
-      bgImg.crossOrigin = "anonymous";
+  // Account for Hi-DPI displays and optional exportScale
+  const dpr = Math.max(1, window.devicePixelRatio || 1) * Math.max(1, exportScale);
 
-      await new Promise((resolve, reject) => {
-        bgImg.onload = () => {
-          ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-          resolve();
-        };
-        bgImg.onerror = () => {
-          ctx.fillStyle = selectedColor.color;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.strokeStyle =
-            selectedColor.color === "#FFFFFF"
-              ? "#E5E7EB"
-              : "rgba(255,255,255,0.2)";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
-          resolve();
-        };
+  const canvas = document.createElement("canvas");
+  canvas.width  = Math.round(cssWidth  * dpr);
+  canvas.height = Math.round(cssHeight * dpr);
+  // Keep the element sized as you expect in the page
+  canvas.style.width  = `${cssWidth}px`;
+  canvas.style.height = `${cssHeight}px`;
 
-        setTimeout(() => {
-          reject(new Error("Image loading timeout"));
-        }, 5000);
+  const ctx = canvas.getContext("2d");
+  // Draw in CSS pixels by scaling the context once
+  ctx.scale(dpr, dpr);
 
-        bgImg.src = selectedColor.previewImages[side];
-      });
+  // Better resampling quality (especially when scaling images)
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
 
-      for (const element of elements[`${side}`]) {
-        if (!isElementOutOfBounds) {
-          ctx.save();
-          ctx.translate(
-            element.x + element.width / 2,
-            element.y + element.height / 2
-          );
-          // ctx.rotate((element.style.rotation * Math.PI) / 180);
+  try {
+    // --- Background ---
+    const bgImg = new Image();
+    bgImg.crossOrigin = "anonymous";
+    const bgSrc = selectedColor?.previewImages?.[side];
 
-          ctx.rotate(
-            parseInt((element?.style?.rotation + 365) / 90) >
-              parseInt((element?.style?.rotation + 360) / 90)
-              ? (90 *
-                  parseInt((element.style?.rotation + 365) / 90) *
-                  Math.PI) /
-                  180
-              : parseInt((element?.style?.rotation + 445) / 90) ===
-                parseInt((element?.style?.rotation + 360) / 90)
-              ? (90 *
-                  parseInt((element.style?.rotation - 365) / 90) *
-                  Math.PI) /
-                180
-              : ((element.style?.rotation || 0) * Math.PI) / 180
-          );
+    await new Promise((resolve, reject) => {
+      let timeout = setTimeout(() => reject(new Error("Image loading timeout")), 5000);
+      bgImg.onload = async () => {
+        clearTimeout(timeout);
+        // Ensure decode is complete for best quality
+        try { if (bgImg.decode) await bgImg.decode(); } catch {}
+        ctx.drawImage(bgImg, 0, 0, cssWidth, cssHeight);
+        resolve();
+      };
+      bgImg.onerror = () => {
+        clearTimeout(timeout);
+        // Fallback: solid fill with a subtle border
+        ctx.fillStyle = selectedColor.color;
+        ctx.fillRect(0, 0, cssWidth, cssHeight);
+        ctx.strokeStyle =
+          selectedColor.color === "#FFFFFF" ? "#E5E7EB" : "rgba(255,255,255,0.2)";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(10, 10, cssWidth - 20, cssHeight - 20);
+        resolve();
+      };
+      bgImg.src = bgSrc;
+    });
 
-          ctx.translate(
-            -element.x - element.width / 2,
-            -element.y - element.height / 2
-          );
+    // --- Foreground elements ---
+    for (const element of elements[side] || []) {
+      if (!isElementOutOfBounds) {
+        ctx.save();
 
-          if (element.type === "text") {
-            ctx.font = `${element.style.fontWeight} ${element.style.fontSize}px ${element.style.fontFamily}`;
-            ctx.fillStyle = element.style.color;
-            ctx.textAlign = "left";
-            ctx.textBaseline = "top";
-            ctx.fillText(element.content, element.x, element.y);
-          } else if (element.type === "image") {
-            const img = new Image();
-            img.crossOrigin = "anonymous";
+        // rotation (degrees → radians). Keep your snap logic if you want, but this is cleaner:
+        const deg = Number(element?.style?.rotation) || 0;
+        const rad = (deg * Math.PI) / 180;
 
-            await new Promise((resolve) => {
-              img.onload = () => {
-                ctx.drawImage(
-                  img,
-                  element.x,
-                  element.y,
-                  element.width,
-                  element.height
-                );
-                resolve();
-              };
-              img.onerror = () => {
-                console.warn("Design image failed to load");
-                resolve();
-              };
-              img.src = element.content;
-            });
-          }
-          ctx.restore();
+        // Rotate around element center in CSS pixels
+        const cx = element.x + element.width / 2;
+        const cy = element.y + element.height / 2;
+        ctx.translate(cx, cy);
+        ctx.rotate(rad);
+        ctx.translate(-cx, -cy);
+
+        if (element.type === "text") {
+          // Use full font shorthand
+          const weight = element.style.fontWeight || "400";
+          const size   = element.style.fontSize  || 16;
+          const family = element.style.fontFamily || "sans-serif";
+          ctx.font = `${weight} ${size}px ${family}`;
+          ctx.fillStyle = element.style.color || "#000";
+          ctx.textAlign = "left";
+          ctx.textBaseline = "top";
+          ctx.fillText(element.content || "", element.x, element.y);
+        } else if (element.type === "image") {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          await new Promise((resolve) => {
+            img.onload = async () => {
+              try { if (img.decode) await img.decode(); } catch {}
+              ctx.drawImage(img, element.x, element.y, element.width, element.height);
+              resolve();
+            };
+            img.onerror = () => {
+              console.warn("Design image failed to load:", element.content);
+              resolve();
+            };
+            img.src = element.content;
+          });
         }
-      }
 
-      return canvas;
-    } catch (error) {
-      console.error("Error creating preview:", error);
-      throw error;
+        ctx.restore();
+      }
     }
-  };
+
+    return canvas;
+  } catch (error) {
+    console.error("Error creating preview:", error);
+    throw error;
+  }
+};
+
 
   const downloadDesign = () => {
     if (!previewCanvases.front && !previewCanvases.back) return;
